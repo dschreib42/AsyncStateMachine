@@ -38,8 +38,9 @@ jobs:
         run: dotnet test --no-restore --no-build --configuration Release
         
       - name: Build nuget package
-        run: dotnet pack src/AsyncStateMachine/AsyncStateMachine.csproj --configuration Release
+        run: dotnet pack src/AsyncStateMachine/AsyncStateMachine.csproj --configuration Release --verbosity normal --output .
+
         
       - name: Publish nuget package
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: dotnet nuget push src/AsyncStateMachine/AsyncStateMachine/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+        run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
