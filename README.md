@@ -136,7 +136,6 @@ string graph = DotGraph.Format(stateMachine.Transitions);
 The `DotGraph.Format()` method returns a string representation of the state machine in the [DOT graph language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).
 
 This can then be rendered by tools that support the DOT graph language, such as the [dot command line tool](http://www.graphviz.org/doc/info/command.html) from [graphviz.org](http://www.graphviz.org) or [viz.js](https://github.com/mdaines/viz.js). See http://www.webgraphviz.com for instant gratification.
-Command line example: `dot -T pdf -o phoneCall.pdf phoneCall.dot` to generate a PDF file.
 
 #### Mermaid
 
