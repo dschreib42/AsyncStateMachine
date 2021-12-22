@@ -41,5 +41,5 @@ jobs:
         run: dotnet pack src/AsyncStateMachine/AsyncStateMachine.csproj --configuration Release
         
       - name: Publish nuget package
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: dotnet nuget push src/AsyncStateMachine/AsyncStateMachine\bin\Release\*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
