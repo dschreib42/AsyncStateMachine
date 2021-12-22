@@ -12,34 +12,82 @@ namespace AsyncStateMachine.Contracts
         where TTrigger : struct
         where TState : struct
     {
-        /// <inheritdoc/>
+        /// <summary>
+        /// Defines a transition from the current state to the given targetState when the given trigger is invoked.
+        /// </summary>
+        /// <param name="trigger">The trigger causing the transition.</param>
+        /// <param name="targetState">The new state when the trigger was invoked.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> Permit(TTrigger trigger, TState targetState);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Defines a conditional transition from the current state to the given targetState when the given trigger is
+        /// invoked and the condition is fulfilled.
+        /// </summary>
+        /// <param name="trigger">The trigger causing the transition.</param>
+        /// <param name="targetState">The new state when the trigger was invoked.</param>
+        /// <param name="condition">On <c>True</c> the transition can be applied, otherwise <c>False</c>.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> PermitIf(TTrigger trigger, TState targetState, Func<bool> condition);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Defines a conditional transition from the current state to the given targetState when the given trigger is
+        /// invoked and the asynchronous condition is fulfilled.
+        /// </summary>
+        /// <param name="trigger">The trigger causing the transition.</param>
+        /// <param name="targetState">The new state when the trigger was invoked.</param>
+        /// <param name="condition">On <c>True</c> the transition can be applied, otherwise <c>False</c>.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> PermitIf(TTrigger trigger, TState targetState, Func<Task<bool>> condition);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Defines a transition from the current state to the same state without invoking the entry/exit handlers.
+        /// </summary>
+        /// <remarks>No state change will be applied.</remarks>
+        /// <param name="trigger">The trigger causing the transition.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> Ignore(TTrigger trigger);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Registers an action to be called, whenever the state is reached.
+        /// </summary>
+        /// <param name="action">The action to invoke when the state was reached.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> OnEntry(Action action);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Registers a asynchronous function to be called, whenever the state is reached.
+        /// </summary>
+        /// <param name="action">The function to invoke when the state was reached.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> OnEntry(Func<Task> func);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Registers a parameterized action to be called, whenever the state is reached.
+        /// </summary>
+        /// <param name="action">The action to invoke when the state was reached.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> OnEntry<TParam>(Action<TParam> action);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Registers a parameterized function to be called, whenever the state is reached.
+        /// </summary>
+        /// <param name="action">The function to invoke when the state was reached.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> OnEntry<TParam>(Func<TParam, Task> onEntryB);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Registers an action to be called, whenever the state is changed.
+        /// </summary>
+        /// <param name="action">The action to invoke when the state is changed.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> OnExit(Action action);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Registers an asynchronous function to be called, whenever the state is changed.
+        /// </summary>
+        /// <param name="action">The function to invoke when the state is changed.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> OnExit(Func<Task> func);
     }
 }
