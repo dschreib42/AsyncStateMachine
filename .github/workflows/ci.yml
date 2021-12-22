@@ -23,7 +23,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
         with:
-          dotnet-version: 6.x
+          dotnet-version: 6.0
           
       - name: Restore dependencies
         run: dotnet restore
