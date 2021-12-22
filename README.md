@@ -102,8 +102,8 @@ Firing a trigger that does not have an allowed transition associated with it wil
 To ignore triggers within certain states, use the `Ignore(...)` directive:
 
 ```csharp
-phoneCall.Configure(State.Connected)
-    .Ignore(Trigger.CallDialled);
+stateMachine.Configure(State.Closed)
+    .Ignore(Trigger.close);
 ```
 
 Alternatively, a state can be marked reentrant so its entry and exit actions will fire even when transitioning from/to itself:
@@ -172,4 +172,4 @@ AsyncStateMachine runs on .NET and .NetCore platforms targeting .NET Standard 2.
 
 This page is an almost-complete description of AsyncStateMachine, and its explicit aim is to remain minimal.
 
-Please use the issue tracker or the if you'd like to report problems or discuss features.
+Please use the issue tracker if you'd like to report problems or discuss features.
