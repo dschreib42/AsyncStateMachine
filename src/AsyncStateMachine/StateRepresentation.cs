@@ -133,7 +133,13 @@ namespace AsyncStateMachine
             return this;
         }
 
-        /// <inheritdoc/>
+        #endregion
+
+        #region Internal methods
+
+        /// <summary>
+        /// Exports the configured transitions.
+        /// </summary>
         internal IEnumerable<Transition<TTrigger, TState>> Transitions
         {
             get
@@ -149,10 +155,6 @@ namespace AsyncStateMachine
                 }
             }
         }
-
-        #endregion
-
-        #region Internal methods
 
         /// <summary>
         /// Can the current
