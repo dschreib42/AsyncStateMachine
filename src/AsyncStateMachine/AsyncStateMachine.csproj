@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;net6.0</TargetFrameworks>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <RootNamespace>AsyncStateMachine</RootNamespace>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageTags>state machine async threat-safe</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/dschreib42/AsyncStateMachine</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/dschreib42/AsyncStateMachine</PackageProjectUrl>
+    <LicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</LicenseUrl>
+    <ProjectUrl>https://github.com/dschreib42/AsyncStateMachine</ProjectUrl>
+    <Copyright>Copyright 2021 Dirk Schreiber</Copyright>
+    <Authors>Dirk Schreiber</Authors>
+    <Description>A lightweight state machine framework for .Net/.NetCore</Description>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <Tags>state machine async</Tags>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <license>http://www.apache.org/licenses/LICENSE-2.0</license>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>
