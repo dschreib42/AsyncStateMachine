@@ -62,11 +62,11 @@ namespace AsyncStateMachine.UnitTests
             bool filter(ICallback x) => subset.Contains(x);
 
             // Act
-            var result = _filter.Filter(callbacks, filter);
+            var result = _filter.Filter(callbacks, filter).ToArray();
 
             // Assert
-            Assert.Equal(sizeSubset, result.Count());
-            Assert.True(result.Count() < callbacks.Count);
+            Assert.Equal(sizeSubset, result.Length);
+            Assert.True(result.Length < callbacks.Count);
         }
 
         [Fact]

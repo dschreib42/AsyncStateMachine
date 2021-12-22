@@ -243,15 +243,13 @@ namespace AsyncStateMachine
         {
             var representation = GetStateRepresentation(previous);
 
-            var result = await representation.CanFireAsync(trigger);
-            if (!result.Item1)
+            var (canBeFired, nextState) = await representation.CanFireAsync(trigger);
+            if (!canBeFired)
             {
-                return result.Item2 is null
-                    ? throw new InvalidOperationException("Failed to find a matching trigger")
-                    : result.Item2.Value;
+                return nextState ?? throw new InvalidOperationException("Failed to find a matching trigger");
             }
 
-            var next = result.Item2.Value;
+            var next = nextState.Value;
 
             // call exit action for current state
             await OnExitAsync(GetStateRepresentation(previous), PredicateWithoutParam);

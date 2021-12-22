@@ -1,18 +1,17 @@
 ﻿using AsyncStateMachine;
-using AsyncStateMachine.Contracts;
 using AsyncStateMachine.Graphs;
 
 namespace ComplexExample
 {
-    public static class Program
+    internal static class Program
     {
-        public enum Trigger
+        private enum Trigger
         {
             ab,
             stop,
         }
 
-        public enum State
+        private enum State
         {
             Start,
             A,

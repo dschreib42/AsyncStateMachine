@@ -56,7 +56,6 @@ namespace AsyncStateMachine
         public IStateConfiguration<TTrigger, TState> PermitIf(TTrigger trigger, TState targetState, Func<bool> condition)
         {
             AddTriggerBehaviour(new PermitIfTriggerBehaviour<TTrigger, TState>(_state, trigger, targetState, condition));
-
             return this;
         }
 
@@ -64,7 +63,6 @@ namespace AsyncStateMachine
         public IStateConfiguration<TTrigger, TState> PermitIf(TTrigger trigger, TState targetState, Func<Task<bool>> condition)
         {
             AddTriggerBehaviour(new PermitIfTriggerBehaviour<TTrigger, TState>(_state, trigger, targetState, condition));
-
             return this;
         }
 
@@ -78,10 +76,9 @@ namespace AsyncStateMachine
             else if (_triggerBehaviours[trigger].Any(x => x is PermitIfTriggerBehaviour<TTrigger, TState> && _state.Equals(x.TargetState)))
                 throw new ArgumentException("A PermitIf() was already created for the same target state", nameof(trigger));
             else if (_triggerBehaviours[trigger].Any(x => x is IgnoredTriggerBehaviour<TTrigger, TState> && _state.Equals(x.TargetState)))
-                throw new ArgumentException($"The ignored trigger is already configured", nameof(trigger));
+                throw new ArgumentException("The ignored trigger is already configured", nameof(trigger));
 
             _triggerBehaviours[trigger].Add(new IgnoredTriggerBehaviour<TTrigger, TState>(_state, trigger, _state));
-
             return this;
         }
 
@@ -157,11 +154,10 @@ namespace AsyncStateMachine
         }
 
         /// <summary>
-        /// Can the current
+        /// Validates if the trigger can be fired.
         /// </summary>
-        /// <param name="trigger"></param>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <param name="trigger">The trigger which should be checked.</param>
+        /// <returns>A tuple for which indicates if the trigger can be fired and what state will be set afterwards.</returns>
         internal async Task<(bool, TState?)> CanFireAsync(TTrigger trigger)
         {
             if (!_triggerBehaviours.TryGetValue(trigger, out var behaviours))

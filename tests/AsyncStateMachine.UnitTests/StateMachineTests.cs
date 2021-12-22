@@ -16,17 +16,19 @@ namespace AsyncStateMachine.UnitTests
         private readonly Mock<ICallbackFilter> _filter;
         private readonly StateMachine<Trigger, State> _sm;
 
+        // Must be `public`, otherwise it's not possible to create a subject mock.
         public enum State
         {
             A,
             B,
-        };
+        }
 
+        // Must be `public`, otherwise it's not possible to create a subject mock.
         public enum Trigger
         {
             a,
             b,
-        };
+        }
 
         /// <summary>
         /// Initializes a new instance of a <see cref="StateMachineTests"/> class.
@@ -190,7 +192,7 @@ namespace AsyncStateMachine.UnitTests
         }
 
         [Fact]
-        public void Configure_Duplicatestate_Throws()
+        public void Configure_DuplicateState_Throws()
         {
             // Arrange
             _sm.Configure(State.B);
@@ -244,7 +246,7 @@ namespace AsyncStateMachine.UnitTests
         }
 
         [Fact]
-        public async Task FireAsync_Igored_ExecuteNotCalled()
+        public async Task FireAsync_Ignored_ExecuteNotCalled()
         {
             // Arrange
             _sm.Configure(State.A)

@@ -6,7 +6,7 @@
     <RootNamespace>AsyncStateMachine</RootNamespace>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageTags>state machine async threat-safe</PackageTags>
+    <PackageTags>state machine async thread-safe</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/dschreib42/AsyncStateMachine</RepositoryUrl>
     <PackageProjectUrl>https://github.com/dschreib42/AsyncStateMachine</PackageProjectUrl>

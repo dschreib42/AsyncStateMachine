@@ -12,7 +12,7 @@ namespace AsyncStateMachine.Behaviours
         where TState : struct
     {
         /// <summary>
-        /// Initializes a new instance of a <see cref="IgnoredTriggerBehaviour"/> class.
+        /// Initializes a new instance of a <see cref="IgnoredTriggerBehaviour{TTrigger,TState}"/> class.
         /// </summary>
         /// <param name="source">The source state.</param>
         /// <param name="trigger">The trigger.</param>

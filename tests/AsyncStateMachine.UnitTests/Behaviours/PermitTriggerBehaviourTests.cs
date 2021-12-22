@@ -8,13 +8,13 @@ namespace AsyncStateMachine.UnitTests.Behaviours
     {
         private readonly PermitTriggerBehaviour<Trigger, State> _behaviour;
 
-        public enum State
+        private enum State
         {
             A,
             B
         }
 
-        public enum Trigger
+        private enum Trigger
         {
             a,
             b

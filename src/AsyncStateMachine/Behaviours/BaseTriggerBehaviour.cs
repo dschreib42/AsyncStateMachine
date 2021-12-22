@@ -17,7 +17,7 @@ namespace AsyncStateMachine.Behaviours
         /// <param name="source">The source state.</param>
         /// <param name="trigger">The trigger.</param>
         /// <param name="target">The destination state.</param>
-        public BaseTriggerBehaviour(TState source, TTrigger trigger, TState target)
+        protected BaseTriggerBehaviour(TState source, TTrigger trigger, TState target)
         {
             Trigger = trigger;
             SourceState = source;

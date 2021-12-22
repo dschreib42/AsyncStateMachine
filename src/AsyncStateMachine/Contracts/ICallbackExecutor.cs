@@ -15,7 +15,6 @@ namespace AsyncStateMachine.Contracts
         /// <param name="callbacks">Callbacks to execute.</param>
         /// <param name="parameter">Argument to pass into the each callback.</param>
         /// <returns>A task that completes, when all callbacks are invoked.</returns>
-        Task ExecuteAsync(IEnumerable<ICallback> callbacks,
-                          object parameter = null);
+        Task ExecuteAsync(IEnumerable<ICallback> callbacks, object parameter = null);
     }
 }

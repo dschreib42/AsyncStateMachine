@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AsyncStateMachine.Callbacks;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -31,7 +32,7 @@ namespace AsyncStateMachine.UnitTests.Callbacks
         public async Task ExecuteAsync_WithArgument_ArgumentWasPassed()
         {
             // Arrange
-            var sentArg = 42;
+            const int sentArg = 42;
             var receivedArg = 0;
             var instance = new FuncWithParamCallback<int>(i => { receivedArg = i; return Task.CompletedTask; });
 

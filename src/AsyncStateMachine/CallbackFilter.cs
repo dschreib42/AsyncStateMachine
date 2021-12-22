@@ -21,11 +21,10 @@ namespace AsyncStateMachine
             _ = predicate ?? throw new ArgumentNullException(nameof(predicate));
 
             // filter callbacks depending on predicate
-            var callbacks = available.Where(x => predicate(x)).ToList();
+            var callbacks = available.Where(predicate).ToList();
 
             // verify callbacks and throw exception depending on guard function
-            if (guard != null)
-                guard(callbacks);
+            guard?.Invoke(callbacks);
 
             return callbacks.ToList();
         }

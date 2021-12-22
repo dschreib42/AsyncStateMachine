@@ -32,7 +32,7 @@ namespace AsyncStateMachine.UnitTests.Callbacks
         public async Task ExecuteAsync_WithArgument_ArgumentWasPassed()
         {
             // Arrange
-            var sentArg = 42;
+            const int sentArg = 42;
             var receivedArg = 0;
             var instance = new ActionWithParamCallback<int>(i => receivedArg = i);
 

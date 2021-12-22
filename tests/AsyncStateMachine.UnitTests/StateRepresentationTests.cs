@@ -13,14 +13,14 @@ namespace AsyncStateMachine.UnitTests
             B,
         };
 
-        public enum Trigger
+        private enum Trigger
         {
             a,
             b,
         };
 
         /// <summary>
-        /// Initializes a new instance of a <see cref="StateRepresentationTests" class.
+        /// Initializes a new instance of a <see cref="StateRepresentationTests"/> class.
         /// </summary>
         public StateRepresentationTests()
         {
@@ -52,7 +52,7 @@ namespace AsyncStateMachine.UnitTests
         }
 
         [Fact]
-        public async Task CanFireAsync_PermitedTrigger_True()
+        public async Task CanFireAsync_PermittedTrigger_True()
         {
             // Arrange
             _sr.Permit(Trigger.a, State.B);
@@ -67,10 +67,10 @@ namespace AsyncStateMachine.UnitTests
         [Theory]
         [InlineData(true, true)]
         [InlineData(false, false)]
-        public async Task CanFireAsync_PermitedIfTrigger_Works(bool contition, bool expected)
+        public async Task CanFireAsync_PermittedIfTrigger_Works(bool condition, bool expected)
         {
             // Arrange
-            _sr.PermitIf(Trigger.a, State.B, () => contition);
+            _sr.PermitIf(Trigger.a, State.B, () => condition);
 
             // Act
             var result = await _sr.CanFireAsync(Trigger.a);
@@ -89,26 +89,26 @@ namespace AsyncStateMachine.UnitTests
             _sr.PermitIf(Trigger.a, State.B, () => !condition);
 
             // Act
-            var result = await _sr.CanFireAsync(Trigger.a);
+            var (canBeFired, newState) = await _sr.CanFireAsync(Trigger.a);
 
             // Assert
-            Assert.True(result.Item1);
-            Assert.Equal(expectedState, result.Item2.Value);
+            Assert.True(canBeFired);
+            Assert.Equal(expectedState, newState.Value);
         }
 
         [Fact]
-        public async Task CanFire_PermitedIfTriggerAllFalse_NoState()
+        public async Task CanFire_PermittedIfTriggerAllFalse_NoState()
         {
             // Arrange
             _sr.PermitIf(Trigger.a, State.A, () => false);
             _sr.PermitIf(Trigger.a, State.B, () => false);
 
             // Act
-            var result = await _sr.CanFireAsync(Trigger.a);
+            var (canBeFired, newState) = await _sr.CanFireAsync(Trigger.a);
 
             // Assert
-            Assert.False(result.Item1);
-            Assert.Null(result.Item2);
+            Assert.False(canBeFired);
+            Assert.Null(newState);
         }
 
         [Fact]
