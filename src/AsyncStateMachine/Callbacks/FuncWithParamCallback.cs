@@ -1,8 +1,7 @@
-﻿using AsyncStateMachine.Callbacks;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
-namespace AsyncStateMachine
+namespace AsyncStateMachine.Callbacks
 {
     /// <summary>
     /// Implementation of a <see cref="ICallback"/> for async functions with a single argument.

@@ -11,7 +11,7 @@ namespace AsyncStateMachine.Callbacks
         private readonly Action<TParam> _action;
 
         /// <summary>
-        /// Initializes a instance of a <see cref="ActionWithParamCallback"/> class.
+        /// Initializes a instance of a <see cref="ActionWithParamCallback{TParam}"/> class.
         /// </summary>
         /// <param name="action">The action.</param>
         public ActionWithParamCallback(Action<TParam> action)

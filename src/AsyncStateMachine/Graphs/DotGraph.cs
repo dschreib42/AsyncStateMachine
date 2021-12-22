@@ -1,5 +1,4 @@
-﻿using AsyncStateMachine.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,8 +14,8 @@ namespace AsyncStateMachine.Graphs
         /// </summary>
         /// <param name="transitions">The enumeration of transitions.</param>
         /// <returns>A mermaid graph.</returns>
-        /// <typeparam name="State">The type of state.</typeparam>
-        /// <typeparam name="Trigger">The type of trigger.</typeparam>
+        /// <typeparam name="TState">The type of state.</typeparam>
+        /// <typeparam name="TTrigger">The type of trigger.</typeparam>
         public static string Format<TState, TTrigger>(IEnumerable<Transition<TTrigger, TState>> transitions)
             where TState : struct
             where TTrigger : struct

@@ -6,13 +6,13 @@ namespace AsyncStateMachine.UnitTests.Behaviours
 {
     public class PermitIfTriggerBehaviourTests
     {
-        public enum State
+        private enum State
         {
             A,
             B
         }
 
-        public enum Trigger
+        private enum Trigger
         {
             a,
             b

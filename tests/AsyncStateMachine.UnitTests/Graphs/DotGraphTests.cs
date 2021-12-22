@@ -6,12 +6,12 @@ namespace AsyncStateMachine.UnitTests.Graphs
 {
     public class DotGraphTests
     {
-        public enum Trigger
+        private enum Trigger
         {
             a
         }
 
-        public enum State
+        private enum State
         {
             A
         }

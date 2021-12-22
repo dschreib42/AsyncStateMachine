@@ -8,17 +8,17 @@ namespace AsyncStateMachine.ComponentTests
     {
         private readonly StateMachine<Trigger, State> _sm;
 
-        public enum State
+        private enum State
         {
             A,
             B,
-        };
+        }
 
-        public enum Trigger
+        private enum Trigger
         {
             a,
             b,
-        };
+        }
 
         /// <summary>
         /// Initializes a new instance of a <see cref="StateMachineTests"/> class.
@@ -338,7 +338,7 @@ namespace AsyncStateMachine.ComponentTests
         public async Task FireAsync_PermitWithIntArg_SyncOnEntryCalled()
         {
             // Arrange
-            var sent = 42;
+            const int sent = 42;
             var received = 0;
             _sm.Configure(State.A)
                 .Permit(Trigger.a, State.B);
@@ -357,7 +357,7 @@ namespace AsyncStateMachine.ComponentTests
         public async Task FireAsync_PermitWithIntArg_AsyncOnEntryCalled()
         {
             // Arrange
-            var sent = 42;
+            const int sent = 42;
             var received = 0;
             _sm.Configure(State.A)
                 .Permit(Trigger.a, State.B);

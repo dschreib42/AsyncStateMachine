@@ -3,7 +3,7 @@ using AsyncStateMachine.Graphs;
 
 namespace BugTrackerExample
 {
-    public class Bug
+    internal class Bug
     {
         private readonly StateMachine<Trigger, State> _machine;
         private readonly string _title;
@@ -25,7 +25,7 @@ namespace BugTrackerExample
         }
 
         /// <summary>
-        /// Constructor for the Bug class
+        /// Constructor for the <see cref="Bug"/> class.
         /// </summary>
         /// <param name="title">The title of the bug report</param>
         public Bug(string title)
@@ -45,7 +45,7 @@ namespace BugTrackerExample
                 .Permit(Trigger.close, State.Closed)
                 .Permit(Trigger.defer, State.Deferred)
                 .OnEntry<string>(OnAssignedAsync)
-                .OnExit(OnDeassignedAsync);
+                .OnExit(OnDeAssignedAsync);
 
             // Configure the Deferred state
             _machine.Configure(State.Deferred)
@@ -69,7 +69,7 @@ namespace BugTrackerExample
         /// <summary>
         /// This method is called automatically when the Assigned state is entered, but only when the trigger is _assignTrigger.
         /// </summary>
-        /// <param name="assignee"></param>
+        /// <param name="assignee">The person assigned to the bug.</param>
         private async Task OnAssignedAsync(string assignee)
         {
             if (_assignee != null && assignee != _assignee)
@@ -82,7 +82,7 @@ namespace BugTrackerExample
         /// <summary>
         /// This method is called when the state machine exits the Assigned state
         /// </summary>
-        private Task OnDeassignedAsync()
+        private Task OnDeAssignedAsync()
             => SendEmailToAssigneeAsync("You're off the hook.");
 
         /// <summary>
