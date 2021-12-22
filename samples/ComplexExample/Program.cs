@@ -52,9 +52,9 @@ namespace ComplexExample
             {
                 await sm.InitializeAsync(State.Start);
 
-                Console.WriteLine(DotGraph.Format(sm.Treansitions));
-                Console.WriteLine(MermaidStateGraph.Format(sm.Treansitions));
-                Console.WriteLine(MermaidFlowChartGraph.Format(sm.Treansitions));
+                Console.WriteLine(DotGraph.Format(sm.Transitions));
+                Console.WriteLine(MermaidStateGraph.Format(sm.Transitions));
+                Console.WriteLine(MermaidFlowChartGraph.Format(sm.Transitions));
 
                 while (true)
                 {

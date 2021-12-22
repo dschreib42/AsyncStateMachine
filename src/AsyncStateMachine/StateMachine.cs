@@ -189,7 +189,7 @@ namespace AsyncStateMachine
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Transition<TTrigger, TState>> Treansitions
+        public IEnumerable<Transition<TTrigger, TState>> Transitions
         {
             get
             {
@@ -279,7 +279,7 @@ namespace AsyncStateMachine
 
         private void Validate()
         {
-            foreach (var transition in Treansitions)
+            foreach (var transition in Transitions)
             {
                 if (transition.Source.HasValue && !KnowsState(transition.Source.Value))
                     throw new Exception($"Trigger '{transition.Trigger}' references unknown source state '{transition.Source}'");

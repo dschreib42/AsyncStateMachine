@@ -21,7 +21,7 @@ namespace AsyncStateMachine.Contracts
         /// <summary>
         /// Retrieve all configured transitions describing the state machine.
         /// </summary>
-        IEnumerable<Transition<TTrigger, TState>> Treansitions { get; }
+        IEnumerable<Transition<TTrigger, TState>> Transitions { get; }
 
         /// <summary>
         /// Configures a state and its triggers/transitions.

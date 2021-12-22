@@ -98,6 +98,6 @@ namespace BugTrackerExample
         /// Export state machine as DOT graph.
         /// </summary>
         public string ToDotGraph()
-            => DotGraph.Format(_machine.Treansitions);
+            => DotGraph.Format(_machine.Transitions);
     }
 }
