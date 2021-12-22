@@ -409,5 +409,31 @@ namespace AsyncStateMachine.ComponentTests
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "no handler"));
         }
+
+        [Fact]
+        public async Task FireAsync_OnEntryThrows_CallerCatchesException()
+        {
+            // Arrange
+            _sm.Configure(State.A)
+                .Permit(Trigger.a, State.B);
+            _sm.Configure(State.B)
+                .OnEntry(() => throw new TimeoutException());
+
+            // Act & Assert
+            await Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
+        }
+
+        [Fact]
+        public async Task FireAsync_OnExitThrows_CallerCatchesException()
+        {
+            // Arrange
+            _sm.Configure(State.A)
+                .Permit(Trigger.a, State.B)
+                .OnExit(() => throw new TimeoutException());
+            _sm.Configure(State.B);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
+        }
     }
 }
