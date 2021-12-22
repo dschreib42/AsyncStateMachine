@@ -49,11 +49,22 @@ Some useful extensions are also provided:
 
  * Parameterized triggers
  * Reentrant states
- * Export state machine as graph (Graphviz/DOT, Mermaid Flow-Chart, State-Diagram)
+ * Export state machine as graph (Graphviz/DOT, Mermaid Flow-Chart or Mermaid State-Diagram)
 
 ### Entry/Exit actions
 
-...
+```csharp
+// Configure the Assigned state
+stateMachine.Configure(State.Assigned)
+    .Permit(Trigger.assign, State.Assigned)
+    .Permit(Trigger.close, State.Closed)
+    .Permit(Trigger.defer, State.Deferred)
+    .OnEntry<string>(assignee => OnAssignedAsync(assignee)) // asynchronous with parameter
+    .OnExit(OnDeassignedAsync); // asynchronous without parameter
+```
+
+Entry/Exit actions can be used to apply certain functionality when a certain state is reached. The OnEntry() calls are all invoked when the state is reached and all OnExit() calls are invoked, when the state is changed. OnEntry() calls support sychronous and asynchronous functions as well as parameterized versions. Currently,
+only a single parameter is supported. If several parameters are needed, then these must be encapsulated in a class/struct/pair.
 
 ### Guard Clauses
 
@@ -105,9 +116,9 @@ stateMachine.Configure(State.Assigned)
 
 By default, triggers must be ignored explicitly. Otherwise an exception (InvalidOperationException) is thrown.
 
-#### State transition
+### Observation
 
-AsyncStateMachine provides an observable propagate state changes:
+AsyncStateMachine provides an observable to propagate state changes:
 
 ```csharp
 IDisposable subscription = stateMachine.Observable.Subscribe(
@@ -135,7 +146,7 @@ string graph = DotGraph.Format(stateMachine.Transitions);
 
 The `DotGraph.Format()` method returns a string representation of the state machine in the [DOT graph language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).
 
-This can then be rendered by tools that support the DOT graph language, such as the [dot command line tool](http://www.graphviz.org/doc/info/command.html) from [graphviz.org](http://www.graphviz.org) or [viz.js](https://github.com/mdaines/viz.js). See http://www.webgraphviz.com for instant gratification.
+This can then be rendered by tools that support the DOT graph language, such as the [dot command line tool](http://www.graphviz.org/doc/info/command.html) from [graphviz.org](http://www.graphviz.org) or [viz.js](https://github.com/mdaines/viz.js). See http://www.webgraphviz.com for instant viewing.
 
 #### Mermaid
 
