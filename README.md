@@ -1,4 +1,4 @@
-# AsyncStateMachine
+# AsyncStateMachine ![Continuous](https://github.com/dschreib42/AsyncStateMachine/workflows/ci/badge.svg) [![NuGet Status](https://img.shields.io/nuget/v/AsyncStateMachine.svg?style=flat)](https://www.nuget.org/packages/AsyncStateMachine)
 
 **A framework for creating *state machines* and lightweight *state machine-based workflows* for Microsoft .NET**
 
