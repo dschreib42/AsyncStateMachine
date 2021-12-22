@@ -110,7 +110,7 @@ Alternatively, a state can be marked reentrant so its entry and exit actions wil
 
 ```csharp
 stateMachine.Configure(State.Assigned)
-    .Permit(Trigger.Assigned, State.Assign)
+    .Permit(Trigger.assign, State.Assigned)
     .OnEntry(() => SendEmailToAssignee());
 ```
 
