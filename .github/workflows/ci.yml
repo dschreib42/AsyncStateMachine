@@ -2,10 +2,6 @@ name: CI for Pull-Requests
 
 on:
   push:
-    paths-ignore:
-      - 'README.md'
-      - 'LICENSE'
-      - 'asserts/**'
     paths:
       - 'src/**'
       - 'tests/**'
