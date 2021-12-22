@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 namespace AsyncStateMachine.Behaviours
 {
     /// <summary>
-    ///
+    /// Implementation of the PermitIf triggers behavior.
     /// </summary>
-    /// <typeparam name="TTrigger"></typeparam>
-    /// <typeparam name="TState"></typeparam>
+    /// <typeparam name="TTrigger">Type of trigger.</typeparam>
+    /// <typeparam name="TState">Type of state.</typeparam>
     internal sealed class PermitIfTriggerBehaviour<TTrigger, TState> : BaseTriggerBehaviour<TTrigger, TState>
         where TTrigger : struct
         where TState : struct

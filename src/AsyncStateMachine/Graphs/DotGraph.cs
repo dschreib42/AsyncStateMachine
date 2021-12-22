@@ -6,7 +6,7 @@ using System.Text;
 namespace AsyncStateMachine.Graphs
 {
     /// <summary>
-    /// Plots a <see cref="http://www.graphviz.org/">Graphviz</see> compliant graph.
+    /// Plots a <see href="http://www.graphviz.org/">Graphviz</see> compliant graph.
     /// </summary>
     public static class DotGraph
     {

@@ -9,6 +9,11 @@ using System.Threading.Tasks;
 
 namespace AsyncStateMachine
 {
+    /// <summary>
+    /// Main StateMachine implementation.
+    /// </summary>
+    /// <typeparam name="TTrigger">Type of trigger.</typeparam>
+    /// <typeparam name="TState">Type of state.</typeparam>
     public sealed class StateMachine<TTrigger, TState> : IStateMachine<TTrigger, TState>
         where TTrigger : struct
         where TState : struct

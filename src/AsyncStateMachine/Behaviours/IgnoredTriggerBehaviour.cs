@@ -2,6 +2,11 @@
 
 namespace AsyncStateMachine.Behaviours
 {
+    /// <summary>
+    /// Implementation of the Ignored triggers behavior.
+    /// </summary>
+    /// <typeparam name="TTrigger">Type of trigger.</typeparam>
+    /// <typeparam name="TState">Type of state.</typeparam>
     internal sealed class IgnoredTriggerBehaviour<TTrigger, TState> : BaseTriggerBehaviour<TTrigger, TState>
         where TTrigger : struct
         where TState : struct

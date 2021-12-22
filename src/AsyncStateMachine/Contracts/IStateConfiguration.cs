@@ -6,8 +6,8 @@ namespace AsyncStateMachine.Contracts
     /// <summary>
     /// Operations exposed to configure a state.
     /// </summary>
-    /// <typeparam name="TTrigger"></typeparam>
-    /// <typeparam name="TState"></typeparam>
+    /// <typeparam name="TTrigger">Type of trigger.</typeparam>
+    /// <typeparam name="TState">Type of state.</typeparam>
     public interface IStateConfiguration<TTrigger, TState>
         where TTrigger : struct
         where TState : struct

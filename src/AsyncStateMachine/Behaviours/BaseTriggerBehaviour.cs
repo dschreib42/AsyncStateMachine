@@ -2,6 +2,11 @@
 
 namespace AsyncStateMachine.Behaviours
 {
+    /// <summary>
+    /// Base class for all triggers behaviors.
+    /// </summary>
+    /// <typeparam name="TTrigger">Type of trigger.</typeparam>
+    /// <typeparam name="TState">Type of state.</typeparam>
     internal abstract class BaseTriggerBehaviour<TTrigger, TState> : ITriggerBehaviour<TTrigger, TState>
         where TTrigger : struct
         where TState : struct

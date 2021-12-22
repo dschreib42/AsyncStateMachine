@@ -11,8 +11,8 @@ namespace AsyncStateMachine
     /// <summary>
     /// Manages all state transitions and all callbacks to be called on state entry/exit.
     /// </summary>
-    /// <typeparam name="TTrigger"></typeparam>
-    /// <typeparam name="TState"></typeparam>
+    /// <typeparam name="TTrigger">Type of trigger.</typeparam>
+    /// <typeparam name="TState">Type of state.</typeparam>
     internal class StateRepresentation<TTrigger, TState> : IStateConfiguration<TTrigger, TState>
         where TTrigger : struct
         where TState : struct

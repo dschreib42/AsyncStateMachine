@@ -6,7 +6,7 @@ using System.Text;
 namespace AsyncStateMachine.Graphs
 {
     /// <summary>
-    /// Plots a <see cref="https://mermaid-js.github.io/mermaid/#/">mermaid</see> compliant state graph.
+    /// Plots a <see href="https://mermaid-js.github.io/mermaid/#/">mermaid</see> compliant state graph.
     /// </summary>
     public static class MermaidStateGraph
     {

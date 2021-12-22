@@ -1,5 +1,10 @@
 ﻿namespace AsyncStateMachine.Behaviours
 {
+    /// <summary>
+    /// Implementation of the default Permit triggers behavior.
+    /// </summary>
+    /// <typeparam name="TTrigger">Type of trigger.</typeparam>
+    /// <typeparam name="TState">Type of state.</typeparam>
     internal sealed class PermitTriggerBehaviour<TTrigger, TState> : BaseTriggerBehaviour<TTrigger, TState>
         where TTrigger : struct
         where TState : struct
