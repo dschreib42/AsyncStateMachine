@@ -2,17 +2,21 @@ name: CI for Pull-Requests
 
 on:
   push:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - 'asserts/**'
     paths:
       - 'src/**'
       - 'tests/**'
       - 'AsyncStateMachine.sln'
-      - '**/*.yml'
+      - '**/ci.yml'
   pull_request:
     paths:
       - 'src/**'
       - 'tests/**'
       - 'AsyncStateMachine.sln'
-      - '**/*.yml'
+      - '**/ci.yml'
   workflow_dispatch:
 
 jobs:
