@@ -35,3 +35,7 @@ jobs:
 
       - name: Run UnitTests
         run: dotnet test --no-restore --no-build --configuration Release
+        
+      - name: Build nuget package
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: dotnet pack src/AsyncStateMachine/AsyncStateMachine.csproj --configuration Release
