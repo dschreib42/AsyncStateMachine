@@ -109,6 +109,27 @@ namespace AsyncStateMachine
         }
 
         /// <inheritdoc/>
+        public async Task<bool> InStateAsync(TState state)
+        {
+            using (await _asyncLock.LockAsync())
+            {
+                if (!_currentState.HasValue)
+                    throw new InvalidOperationException("StateMachine not yet initialized");
+
+                if (state.Equals(_currentState))
+                    return true;
+
+                var representation = GetStateRepresentation(_currentState.Value);
+                var superState = representation.ParentState;
+
+                if (superState.HasValue && state.Equals(superState))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> CanFireAsync(TTrigger trigger)
         {
             try

@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncStateMachine", "src\As
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BugTrackerExample", "samples\BugTrackerExample\BugTrackerExample.csproj", "{498225DE-6651-417F-AF47-5A1BABF03888}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncStateMachine.ComponentTests", "tests\AsyncStateMachine.ComponentTests\AsyncStateMachine.ComponentTests.csproj", "{E1C794A5-036A-44B7-9695-C377A54D0021}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncStateMachine.ComponentTests", "tests\AsyncStateMachine.ComponentTests\AsyncStateMachine.ComponentTests.csproj", "{E1C794A5-036A-44B7-9695-C377A54D0021}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{EE1A2E61-0B2F-40A4-815F-5AB22CDC7860}"
 	ProjectSection(SolutionItems) = preProject

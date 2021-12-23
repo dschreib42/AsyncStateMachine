@@ -293,5 +293,22 @@ namespace AsyncStateMachine.UnitTests
             // Assert
             Assert.NotNull(exception);
         }
+
+        [Fact]
+        public void ParentState_SubstateOf_True()
+        {
+            // Arrange
+            _sr.SubstateOf(State.B);
+
+            // Act & Assert
+            Assert.Equal(State.B, _sr.ParentState);
+        }
+
+        [Fact]
+        public void ParentState_NoSubstateOf_Null()
+        {
+            // Act & Assert
+            Assert.Null(_sr.ParentState);
+        }
     }
 }

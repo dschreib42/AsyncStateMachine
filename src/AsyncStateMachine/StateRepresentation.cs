@@ -25,6 +25,8 @@ namespace AsyncStateMachine
         private readonly IList<ICallback> _onEntry;
         private readonly IList<ICallback> _onExit;
 
+        private TState? _parentState;
+
         #endregion
 
         #region Constructors
@@ -36,6 +38,7 @@ namespace AsyncStateMachine
         public StateRepresentation(TState sourceState)
         {
             _state = sourceState;
+            _parentState = null;
             _triggerBehaviours = new Dictionary<TTrigger, IList<ITriggerBehaviour<TTrigger, TState>>>();
             _onEntry = new List<ICallback>();
             _onExit = new List<ICallback>();
@@ -44,6 +47,19 @@ namespace AsyncStateMachine
         #endregion
 
         #region IStateConfiguration implementation
+
+        /// <inheritdoc/>
+        public IStateConfiguration<TTrigger, TState> SubstateOf(TState parentState)
+        {
+            if (_state.Equals(parentState))
+                throw new ArgumentException("The current state must be different from the given parentState", nameof(parentState));
+
+            if (_parentState.HasValue)
+                throw new ArgumentException("The parent state was already defined", nameof(parentState));
+
+            _parentState = parentState;
+            return this;
+        }
 
         /// <inheritdoc/>
         public IStateConfiguration<TTrigger, TState> Permit(TTrigger trigger, TState targetState)
@@ -186,6 +202,11 @@ namespace AsyncStateMachine
 
             return (false, null);
         }
+
+        /// <summary>
+        /// Returns the parent state of the current state.
+        /// </summary>
+        internal TState? ParentState => _parentState;
 
         /// <summary>
         /// Provides all callbacks to be executed on state entry.

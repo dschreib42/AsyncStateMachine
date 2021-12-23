@@ -39,6 +39,14 @@ namespace AsyncStateMachine.ComponentTests
         }
 
         [Fact]
+        public void Configure_DuplicateSubstateOf_Throws()
+        {
+            // Act & Assert
+            Assert.Throws<ArgumentException>(
+                () => _sm.Configure(State.A).SubstateOf(State.B).SubstateOf(State.B));
+        }
+
+        [Fact]
         public void Configure_DuplicatePermit_Throws()
         {
             // Act & Assert

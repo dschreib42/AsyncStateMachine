@@ -36,6 +36,14 @@ namespace AsyncStateMachine.Contracts
         IStateConfiguration<TTrigger, TState> Configure(TState state);
 
         /// <summary>
+        /// Checks if the state machine is in the given state.
+        /// </summary>
+        /// <remarks>The given state can be the substate state or the primary state.</remarks>
+        /// <param name="state">The state to test.</param>
+        /// <returns><c>True</c> if state is active, otherwise <c>False</c>.</returns>
+        Task<bool> InStateAsync(TState state);
+
+        /// <summary>
         /// Triggers a state change.
         /// </summary>
         /// <param name="trigger">Trigger to use.</param>
