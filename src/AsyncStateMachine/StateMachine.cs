@@ -119,10 +119,8 @@ namespace AsyncStateMachine
                 if (state.Equals(_currentState))
                     return true;
 
-                var representation = GetStateRepresentation(_currentState.Value);
-                var superState = representation.ParentState;
-
-                if (superState.HasValue && state.Equals(superState))
+                var parentState = GetStateRepresentation(_currentState.Value).ParentState;
+                if (parentState.HasValue && state.Equals(parentState))
                     return true;
             }
 

@@ -21,13 +21,6 @@ namespace AsyncStateMachine.Contracts
         IStateConfiguration<TTrigger, TState> Permit(TTrigger trigger, TState targetState);
 
         /// <summary>
-        /// Marks the current state as substate of the given superstate.
-        /// </summary>
-        /// <param name="superstate">The parent state of the current state</param>
-        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
-        IStateConfiguration<TTrigger, TState> SubstateOf(TState superstate);
-
-        /// <summary>
         /// Defines a conditional transition from the current state to the given targetState when the given trigger is
         /// invoked and the condition is fulfilled.
         /// </summary>
@@ -104,5 +97,12 @@ namespace AsyncStateMachine.Contracts
         /// <param name="action">The function to invoke when the state is changed.</param>
         /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> OnExit(Func<Task> func);
+
+        /// <summary>
+        /// Marks the current state as substate of the given parentState.
+        /// </summary>
+        /// <param name="parentState">The parent state of the current state</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
+        IStateConfiguration<TTrigger, TState> SubstateOf(TState parentState);
     }
 }
