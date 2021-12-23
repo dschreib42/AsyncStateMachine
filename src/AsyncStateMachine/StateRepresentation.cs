@@ -48,7 +48,17 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public IStateConfiguration<TTrigger, TState> Permit(TTrigger trigger, TState targetState)
         {
+            if (_state.Equals(targetState))
+                throw new ArgumentException("Target state must be different from source state. Use PremitReentry/Ignore otherwise.", nameof(targetState));
+
             AddTriggerBehaviour(new PermitTriggerBehaviour<TTrigger, TState>(_state, trigger, targetState));
+            return this;
+        }
+
+        /// <inheritdoc/>
+        public IStateConfiguration<TTrigger, TState> PermitReentry(TTrigger trigger)
+        {
+            AddTriggerBehaviour(new PermitTriggerBehaviour<TTrigger, TState>(_state, trigger, _state));
             return this;
         }
 

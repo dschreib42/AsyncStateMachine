@@ -107,7 +107,7 @@ namespace AsyncStateMachine.UnitTests
         {
             // Arrange
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A);
+                .PermitReentry(Trigger.a);
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -121,7 +121,7 @@ namespace AsyncStateMachine.UnitTests
         {
             // Arrange
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A);
+                .PermitReentry(Trigger.a);
             _subject.Invocations.Clear();
 
             // Act
@@ -206,7 +206,7 @@ namespace AsyncStateMachine.UnitTests
         {
             // Arrange
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A);
+                .PermitReentry(Trigger.a);
 
             // Act
             var result = await _sm.CanFireAsync(Trigger.b);
@@ -220,7 +220,7 @@ namespace AsyncStateMachine.UnitTests
         {
             // Arrange
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A);
+                .PermitReentry(Trigger.a);
 
             // Act
             var result = await _sm.CanFireAsync(Trigger.a);
@@ -234,7 +234,7 @@ namespace AsyncStateMachine.UnitTests
         {
             // Arrange
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A);
+                .PermitReentry(Trigger.a);
 
             // Act
             await _sm.FireAsync(Trigger.a);

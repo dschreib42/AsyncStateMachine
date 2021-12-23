@@ -220,6 +220,29 @@ namespace AsyncStateMachine.UnitTests
         }
 
         [Fact]
+        public void Permit_SameState_Throws()
+        {
+            // Act
+            var exception = Record.Exception(() => _sr.Permit(Trigger.a, State.A));
+
+            // Assert
+            Assert.NotNull(exception);
+        }
+
+        [Fact]
+        public void PermitReentry_PermitReentry_Throws()
+        {
+            // Arrange
+            _sr.PermitReentry(Trigger.a);
+
+            // Act
+            var exception = Record.Exception(() => _sr.PermitReentry(Trigger.a));
+
+            // Assert
+            Assert.NotNull(exception);
+        }
+
+        [Fact]
         public void Permit_Permit_Throws()
         {
             // Arrange

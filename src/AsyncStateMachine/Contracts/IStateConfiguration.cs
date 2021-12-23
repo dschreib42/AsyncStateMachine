@@ -41,6 +41,14 @@ namespace AsyncStateMachine.Contracts
         IStateConfiguration<TTrigger, TState> PermitIf(TTrigger trigger, TState targetState, Func<Task<bool>> condition);
 
         /// <summary>
+        /// Defines a transition from the current state to the same state with invoking the entry/exit handlers.
+        /// </summary>
+        /// <remarks>No state change will be applied.</remarks>
+        /// <param name="trigger">The trigger causing the transition.</param>
+        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
+        IStateConfiguration<TTrigger, TState> PermitReentry(TTrigger trigger);
+
+        /// <summary>
         /// Defines a transition from the current state to the same state without invoking the entry/exit handlers.
         /// </summary>
         /// <remarks>No state change will be applied.</remarks>

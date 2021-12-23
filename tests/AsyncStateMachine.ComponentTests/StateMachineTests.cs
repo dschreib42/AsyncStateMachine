@@ -77,7 +77,7 @@ namespace AsyncStateMachine.ComponentTests
         {
             // Arrange
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A);
+                .PermitReentry(Trigger.a);
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -119,7 +119,7 @@ namespace AsyncStateMachine.ComponentTests
         {
             // Arrange
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A);
+                .PermitReentry(Trigger.a);
 
             // Act
             var result = await _sm.CanFireAsync(Trigger.b);
@@ -133,7 +133,7 @@ namespace AsyncStateMachine.ComponentTests
         {
             // Arrange
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A);
+                .PermitReentry(Trigger.a);
 
             // Act
             var result = await _sm.CanFireAsync(Trigger.a);
@@ -149,7 +149,7 @@ namespace AsyncStateMachine.ComponentTests
             var syncCalled = 0;
             var asyncCalled = 0;
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A)
+                .PermitReentry(Trigger.a)
                 .OnEntry(() => syncCalled++)
                 .OnEntry(() => { asyncCalled++; return Task.CompletedTask; });
 
@@ -168,7 +168,7 @@ namespace AsyncStateMachine.ComponentTests
             var syncCalled = 0;
             var asyncCalled = 0;
             _sm.Configure(State.A)
-                .Permit(Trigger.a, State.A)
+                .PermitReentry(Trigger.a)
                 .OnExit(() => syncCalled++)
                 .OnExit(() => { asyncCalled++; return Task.CompletedTask; });
 
