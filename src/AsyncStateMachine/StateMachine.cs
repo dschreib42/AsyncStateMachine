@@ -272,10 +272,9 @@ namespace AsyncStateMachine
 
         private StateRepresentation<TTrigger, TState> GetStateRepresentation(TState state)
         {
-            if (!_states.TryGetValue(state, out var representation))
-                throw new InvalidOperationException($"State not found: '{state}'");
-
-            return representation;
+            return _states.TryGetValue(state, out var representation)
+                ? representation
+                : throw new InvalidOperationException($"State not found: '{state}'");
         }
 
         private void Validate()

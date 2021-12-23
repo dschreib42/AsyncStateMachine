@@ -104,7 +104,7 @@ namespace AsyncStateMachine.UnitTests
         public void Filter_AllFiltered_GuardThrows()
         {
             // Arrange
-            void EmptyGuard(IEnumerable<ICallback> callbacks)
+            static void EmptyGuard(IEnumerable<ICallback> callbacks)
             {
                 if (!callbacks.Any())
                     throw new Exception("no callbacks");

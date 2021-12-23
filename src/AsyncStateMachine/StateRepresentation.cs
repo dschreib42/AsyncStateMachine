@@ -230,11 +230,11 @@ namespace AsyncStateMachine
             if (!_triggerBehaviours.ContainsKey(trigger))
                 _triggerBehaviours.Add(trigger, new List<ITriggerBehaviour<TTrigger, TState>>());
             else if (_triggerBehaviours[trigger].Any(x => x is PermitTriggerBehaviour<TTrigger, TState> && targetState.Equals(x.TargetState)))
-                throw new ArgumentException("A Permit() was already created for the same trigger", nameof(targetState));
+                throw new ArgumentException("A Permit() was already created for the same trigger", nameof(triggerBehaviour));
             else if (_triggerBehaviours[trigger].Any(x => x is PermitIfTriggerBehaviour<TTrigger, TState> && targetState.Equals(x.TargetState)))
-                throw new ArgumentException("A PermitIf() was already created for the same target state", nameof(targetState));
+                throw new ArgumentException("A PermitIf() was already created for the same target state", nameof(triggerBehaviour));
             else if (_triggerBehaviours[trigger].Any(x => x is IgnoredTriggerBehaviour<TTrigger, TState> && targetState.Equals(x.TargetState)))
-                throw new ArgumentException($"The ignored trigger is already configured", nameof(trigger));
+                throw new ArgumentException("The ignored trigger is already configured", nameof(triggerBehaviour));
 
             _triggerBehaviours[trigger].Add(triggerBehaviour);
         }
