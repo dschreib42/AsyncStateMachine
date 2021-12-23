@@ -12,7 +12,7 @@ stateMachine.Configure(State.Open)
 
 // Configure the Assigned state
 stateMachine.Configure(State.Assigned)
-    .Permit(Trigger.assign, State.Assigned)
+    .PermitReentry(Trigger.assign)
     .Permit(Trigger.close, State.Closed)
     .Permit(Trigger.defer, State.Deferred)
     .OnEntry<string>(assignee => OnAssignedAsync(assignee)) // asynchronous with parameter
@@ -44,6 +44,7 @@ Most standard state machine constructs are supported:
  * Generic support for states and triggers of type struct (numbers, chars, enums, etc.)
  * Entry/exit actions for states (synchronous and asynchronous)
  * Guard clauses to support conditional transitions
+ * Hierarchical states
 
 Some useful extensions are also provided:
 
@@ -110,7 +111,7 @@ Alternatively, a state can be marked reentrant so its entry and exit actions wil
 
 ```csharp
 stateMachine.Configure(State.Assigned)
-    .Permit(Trigger.assign, State.Assigned)
+    .PermitReentry(Trigger.assign)
     .OnEntry(() => SendEmailToAssignee());
 ```
 
