@@ -1,10 +1,10 @@
 ﻿using AsyncStateMachine.Callbacks;
 using AsyncStateMachine.Contracts;
+using NeoSmart.AsyncLock;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace AsyncStateMachine
@@ -24,7 +24,7 @@ namespace AsyncStateMachine
         private readonly ISubject<Transition<TTrigger, TState>> _subject;
         private readonly ICallbackFilter _filter;
         private readonly ICallbackExecutor _executor;
-        private readonly SemaphoreSlim _semaphore;
+        private readonly AsyncLock _asyncLock;
 
         private TState? _initialState;
         private TState? _currentState;
@@ -61,7 +61,7 @@ namespace AsyncStateMachine
             _filter = filter ?? throw new ArgumentNullException(nameof(filter));
             _executor = executor ?? throw new ArgumentNullException(nameof(executor));
             _states = new Dictionary<TState, StateRepresentation<TTrigger, TState>>();
-            _semaphore = new SemaphoreSlim(1);
+            _asyncLock = new AsyncLock();
 
             _initialState = initialState;
             _currentState = initialState;
@@ -84,10 +84,8 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public async Task InitializeAsync(TState initialState)
         {
-            try
+            using (await _asyncLock.LockAsync())
             {
-                await _semaphore.WaitAsync();
-
                 Validate();
 
                 var representation = GetStateRepresentation(initialState);
@@ -99,10 +97,6 @@ namespace AsyncStateMachine
 
                 // publish state changed
                 _subject.OnNext(new Transition<TTrigger, TState>(null, null, _initialState.Value));
-            }
-            finally
-            {
-                _semaphore.Release();
             }
         }
 
@@ -119,62 +113,50 @@ namespace AsyncStateMachine
         {
             try
             {
-                await _semaphore.WaitAsync();
+                using (await _asyncLock.LockAsync())
+                {
+                    if (!_currentState.HasValue || !KnowsState(_currentState.Value))
+                        return false;
 
-                if (!_currentState.HasValue || !KnowsState(_currentState.Value))
-                    return false;
+                    var result = await GetStateRepresentation(_currentState.Value).CanFireAsync(trigger);
 
-                var result = await GetStateRepresentation(_currentState.Value).CanFireAsync(trigger);
-
-                return result.Item1;
+                    return result.Item1;
+                }
             }
             catch (Exception)
             {
                 return false;
-            }
-            finally
-            {
-                _semaphore.Release();
             }
         }
 
         /// <inheritdoc/>
         public async Task FireAsync(TTrigger trigger)
         {
-            try
+            using (await _asyncLock.LockAsync())
             {
-                await _semaphore.WaitAsync();
-
                 if (!_currentState.HasValue)
                     throw new InvalidOperationException("StateMachine not yet initialized");
 
                 await FireAsync(trigger, _currentState.Value);
-            }
-            finally
-            {
-                _semaphore.Release();
             }
         }
 
         /// <inheritdoc/>
         public async Task FireAsync<TParam>(TTrigger trigger, TParam parameter)
         {
-            try
+            using (await _asyncLock.LockAsync())
             {
-                await _semaphore.WaitAsync();
+                try
+                {
+                    if (!_currentState.HasValue)
+                        throw new InvalidOperationException("StateMachine not yet initialized");
 
-                if (!_currentState.HasValue)
-                    throw new InvalidOperationException("StateMachine not yet initialized");
-
-                await FireAsync(trigger, _currentState.Value, parameter);
-            }
-            catch (ArgumentException ex)
-            {
-                throw new ArgumentException(ex.Message, nameof(parameter));
-            }
-            finally
-            {
-                _semaphore.Release();
+                    await FireAsync(trigger, _currentState.Value, parameter);
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new ArgumentException(ex.Message, nameof(parameter));
+                }
             }
         }
 
@@ -212,7 +194,7 @@ namespace AsyncStateMachine
             var disposables = new object[]
             {
                 _subject,
-                _semaphore
+                _asyncLock
             };
 
             foreach (var disposable in disposables.Cast<IDisposable>())
@@ -254,10 +236,10 @@ namespace AsyncStateMachine
             // call exit action for current state
             await OnExitAsync(GetStateRepresentation(previous), PredicateWithoutParam);
 
+            _currentState = next;
+
             // call entry action for new state
             await OnEnterAsync(GetStateRepresentation(next), predicate, parameter, guard);
-
-            _currentState = next;
 
             // publish state changed
             _subject.OnNext(new Transition<TTrigger, TState>(previous, trigger, next));

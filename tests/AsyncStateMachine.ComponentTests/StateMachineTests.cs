@@ -411,6 +411,23 @@ namespace AsyncStateMachine.ComponentTests
         }
 
         [Fact]
+        public async Task FireAsync_OnEntry_FireAgain()
+        {
+            // Arrange
+            _sm.Configure(State.A)
+                .Permit(Trigger.b, State.B);
+            _sm.Configure(State.B)
+                .Permit(Trigger.a, State.A)
+                .OnEntry(() => _sm.FireAsync(Trigger.a));
+
+            // Act
+            await _sm.FireAsync(Trigger.b);
+
+            // Assert
+            Assert.Equal(State.A, _sm.CurrentState);
+        }
+
+        [Fact]
         public async Task FireAsync_OnEntryThrows_CallerCatchesException()
         {
             // Arrange
