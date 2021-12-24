@@ -38,10 +38,11 @@ namespace AsyncStateMachine.Contracts
         /// <summary>
         /// Checks if the state machine is in the given state.
         /// </summary>
-        /// <remarks>The given state can be the substate state or the primary state.</remarks>
+        /// <remarks>The given state can be the sub-state or the primary state.</remarks>
         /// <param name="state">The state to test.</param>
+        /// <param name="maxDepth">Max. depth of hierarchy.</param>
         /// <returns><c>True</c> if state is active, otherwise <c>False</c>.</returns>
-        Task<bool> InStateAsync(TState state);
+        Task<bool> InStateAsync(TState state, , ushort maxDepth = 5);
 
         /// <summary>
         /// Triggers a state change.

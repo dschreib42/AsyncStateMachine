@@ -109,7 +109,7 @@ namespace AsyncStateMachine
         }
 
         /// <inheritdoc/>
-        public async Task<bool> InStateAsync(TState state)
+        public async Task<bool> InStateAsync(TState state, ushort maxDepth = 5)
         {
             using (await _asyncLock.LockAsync())
             {
@@ -119,9 +119,22 @@ namespace AsyncStateMachine
                 if (state.Equals(_currentState))
                     return true;
 
-                var parentState = GetStateRepresentation(_currentState.Value).ParentState;
-                if (parentState.HasValue && state.Equals(parentState))
-                    return true;
+                var nextState = _currentState.Value;
+                for (var i = 0; i < maxDepth; i++)
+                {
+                    var parentState = GetStateRepresentation(nextState).ParentState;
+                    if (parentState.HasValue)
+                    {
+                        if (state.Equals(parentState))
+                            return true;
+
+                        nextState = parentState.Value;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
 
             return false;

@@ -22,6 +22,7 @@ namespace AsyncStateMachine.UnitTests
             A,
             B,
             C,
+            D,
         }
 
         // Must be `public`, otherwise it's not possible to create a subject mock.
@@ -415,7 +416,7 @@ namespace AsyncStateMachine.UnitTests
         [InlineData(State.C, State.A, false)]
         [InlineData(State.C, State.B, true)]
         [InlineData(State.C, State.C, true)]
-        public async Task InStateAsync_(State current, State test, bool expected)
+        public async Task InStateAsync_StateCombinations_Works(State current, State test, bool expected)
         {
             // Assert
             _sm.Configure(State.A);
@@ -429,6 +430,93 @@ namespace AsyncStateMachine.UnitTests
 
             // Assert
             Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData(State.A, State.A, true)]
+        [InlineData(State.A, State.B, false)]
+        [InlineData(State.A, State.C, false)]
+        [InlineData(State.B, State.A, true)]
+        [InlineData(State.B, State.B, true)]
+        [InlineData(State.B, State.C, false)]
+        [InlineData(State.C, State.A, true)]
+        [InlineData(State.C, State.B, true)]
+        [InlineData(State.C, State.C, true)]
+        public async Task InStateAsync_StateHierarchie_Works(State current, State test, bool expected)
+        {
+            // Assert
+            _sm.Configure(State.A);
+            _sm.Configure(State.B)
+                .SubstateOf(State.A);
+            _sm.Configure(State.C)
+                .SubstateOf(State.B);
+            await _sm.InitializeAsync(current);
+
+            // Act
+            var result = await _sm.InStateAsync(test);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData(State.A, State.A, true)]
+        [InlineData(State.A, State.B, false)]
+        [InlineData(State.A, State.C, false)]
+        [InlineData(State.A, State.D, false)]
+        [InlineData(State.B, State.A, true)]
+        [InlineData(State.B, State.B, true)]
+        [InlineData(State.B, State.C, false)]
+        [InlineData(State.B, State.D, false)]
+        [InlineData(State.C, State.A, false)]
+        [InlineData(State.C, State.B, false)]
+        [InlineData(State.C, State.C, true)]
+        [InlineData(State.C, State.D, false)]
+        [InlineData(State.D, State.A, false)]
+        [InlineData(State.D, State.B, false)]
+        [InlineData(State.D, State.C, true)]
+        [InlineData(State.D, State.D, true)]
+        public async Task InStateAsync_TwoStateHierarchies_Works(State current, State test, bool expected)
+        {
+            // Assert
+            _sm.Configure(State.A);
+            _sm.Configure(State.B)
+                .SubstateOf(State.A);
+            _sm.Configure(State.C);
+            _sm.Configure(State.D)
+                .SubstateOf(State.C);
+
+            await _sm.InitializeAsync(current);
+
+            // Act
+            var result = await _sm.InStateAsync(test);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData(State.A, State.A, true)]
+        [InlineData(State.A, State.B, true)]
+        [InlineData(State.B, State.A, true)]
+        [InlineData(State.B, State.B, true)]
+        [InlineData(State.A, State.C, false)]
+        [InlineData(State.A, State.D, false)]
+        public async Task InStateAsync_CircularHierarchie_Works(State current, State test, bool expected)
+        {
+            // Assert
+            _sm.Configure(State.A)
+                .SubstateOf(State.B);
+            _sm.Configure(State.B)
+                .SubstateOf(State.A);
+
+            await _sm.InitializeAsync(State.A);
+
+            // Act
+            var result = await _sm.InStateAsync(State.B);
+
+            // Assert
+            Assert.True(result);
         }
     }
 }
