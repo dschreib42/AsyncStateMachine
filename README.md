@@ -45,6 +45,7 @@ Most standard state machine constructs are supported:
  * Entry/exit actions for states (synchronous and asynchronous)
  * Guard clauses to support conditional transitions
  * Hierarchical states
+ * Unit tested (code coverage >80%)
 
 Some useful extensions are also provided:
 
@@ -116,6 +117,21 @@ stateMachine.Configure(State.Assigned)
 ```
 
 By default, triggers must be ignored explicitly. Otherwise an exception (InvalidOperationException) is thrown.
+
+### State Hierarchy
+
+```csharp
+stateMachine.Configure(State.A);
+stateMachine.Configure(State.B)
+    .SubstateOf(A);
+stateMachine.Configure(State.C)
+    .SubstateOf(B);
+```
+
+Defines a multi-level hierarchy where C and B are sub-states of A. The `CurrentState` property always returns the current state. But with `InStateAsync(...)` can be checked,
+if the machine is in a sub-state and in the super-/parent-state.
+
+The max. supported depth of hierarchies is limited to InStateAsync(...) by `ushort.MaxValue = 65535`.
 
 ### Observation
 
