@@ -1,4 +1,5 @@
 ﻿using AsyncStateMachine.Behaviours;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,6 +17,26 @@ namespace AsyncStateMachine.UnitTests.Behaviours
         {
             a,
             b
+        }
+
+        [Fact]
+        public void Constructor_NullSyncCondition_Throws()
+        {
+            // Arrange
+            Func<bool> condition = null;
+
+            // Act && Assert
+            Assert.ThrowsAny<ArgumentNullException>(() => new PermitIfTriggerBehaviour<Trigger, State>(State.A, Trigger.a, State.B, condition));
+        }
+
+        [Fact]
+        public void Constructor_NullAsyncCondition_Throws()
+        {
+            // Arrange
+            Func<Task<bool>> condition = null;
+
+            // Act && Assert
+            Assert.ThrowsAny<ArgumentNullException>(() => new PermitIfTriggerBehaviour<Trigger, State>(State.A, Trigger.a, State.B, condition));
         }
 
         [Fact]
