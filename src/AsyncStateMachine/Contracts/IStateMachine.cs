@@ -42,7 +42,7 @@ namespace AsyncStateMachine.Contracts
         /// <param name="state">The state to test.</param>
         /// <param name="maxDepth">Max. depth of hierarchy.</param>
         /// <returns><c>True</c> if state is active, otherwise <c>False</c>.</returns>
-        Task<bool> InStateAsync(TState state, , ushort maxDepth = 5);
+        Task<bool> InStateAsync(TState state, ushort maxDepth = 5);
 
         /// <summary>
         /// Triggers a state change.

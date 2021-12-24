@@ -510,13 +510,13 @@ namespace AsyncStateMachine.UnitTests
             _sm.Configure(State.B)
                 .SubstateOf(State.A);
 
-            await _sm.InitializeAsync(State.A);
+            await _sm.InitializeAsync(current);
 
             // Act
-            var result = await _sm.InStateAsync(State.B);
+            var result = await _sm.InStateAsync(test);
 
             // Assert
-            Assert.True(result);
+            Assert.Equal(expected, result);
         }
     }
 }
