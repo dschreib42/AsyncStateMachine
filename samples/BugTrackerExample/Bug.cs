@@ -41,7 +41,7 @@ namespace BugTrackerExample
 
             // Configure the Assigned state
             _machine.Configure(State.Assigned)
-                .Permit(Trigger.assign, State.Assigned)
+                .PermitReentry(Trigger.assign)
                 .Permit(Trigger.close, State.Closed)
                 .Permit(Trigger.defer, State.Deferred)
                 .OnEntry<string>(OnAssignedAsync)
