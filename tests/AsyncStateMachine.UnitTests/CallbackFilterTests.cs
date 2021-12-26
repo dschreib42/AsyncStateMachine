@@ -59,10 +59,10 @@ namespace AsyncStateMachine.UnitTests
             var mocks = RandomCallbacks(numCallbacks);
             var callbacks = mocks.Select(x => x.Object).ToList();
             var subset = callbacks.Take(sizeSubset).ToList();
-            bool filter(ICallback x) => subset.Contains(x);
+            bool TestFilter(ICallback x) => subset.Contains(x);
 
             // Act
-            var result = _filter.Filter(callbacks, filter).ToArray();
+            var result = _filter.Filter(callbacks, TestFilter).ToArray();
 
             // Assert
             Assert.Equal(sizeSubset, result.Length);
