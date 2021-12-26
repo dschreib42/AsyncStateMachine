@@ -285,7 +285,7 @@ namespace AsyncStateMachine
         {
             return _states.TryGetValue(state, out var representation)
                 ? representation
-                : throw new InvalidOperationException($"State not found: '{state}'");
+                : throw new ArgumentException($"State not found: '{state}'", nameof(state));
         }
 
         private void Validate()
