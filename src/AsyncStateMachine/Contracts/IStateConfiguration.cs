@@ -66,7 +66,7 @@ namespace AsyncStateMachine.Contracts
         /// <summary>
         /// Registers a asynchronous function to be called, whenever the state is reached.
         /// </summary>
-        /// <param name="action">The function to invoke when the state was reached.</param>
+        /// <param name="func">The function to invoke when the state was reached.</param>
         /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> OnEntry(Func<Task> func);
 
@@ -80,9 +80,9 @@ namespace AsyncStateMachine.Contracts
         /// <summary>
         /// Registers a parameterized function to be called, whenever the state is reached.
         /// </summary>
-        /// <param name="action">The function to invoke when the state was reached.</param>
+        /// <param name="func">The function to invoke when the state was reached.</param>
         /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
-        IStateConfiguration<TTrigger, TState> OnEntry<TParam>(Func<TParam, Task> onEntryB);
+        IStateConfiguration<TTrigger, TState> OnEntry<TParam>(Func<TParam, Task> func);
 
         /// <summary>
         /// Registers an action to be called, whenever the state is changed.
@@ -94,7 +94,7 @@ namespace AsyncStateMachine.Contracts
         /// <summary>
         /// Registers an asynchronous function to be called, whenever the state is changed.
         /// </summary>
-        /// <param name="action">The function to invoke when the state is changed.</param>
+        /// <param name="func">The function to invoke when the state is changed.</param>
         /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> OnExit(Func<Task> func);
 
