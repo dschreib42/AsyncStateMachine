@@ -3,7 +3,7 @@
 namespace AsyncStateMachine.Behaviours
 {
     /// <summary>
-    /// Implementation of the Ignored triggers behavior.
+    /// Implementation of the Ignored trigger behavior.
     /// </summary>
     /// <typeparam name="TTrigger">Type of trigger.</typeparam>
     /// <typeparam name="TState">Type of state.</typeparam>
