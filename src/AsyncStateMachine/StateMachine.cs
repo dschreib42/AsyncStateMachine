@@ -229,10 +229,14 @@ namespace AsyncStateMachine
                 _asyncLock
             };
 
-            foreach (var disposable in disposables.Cast<IDisposable>())
+            foreach (var disposable in disposables
+                .Where(x => x is IDisposable)
+                .Cast<IDisposable>())
             {
                 disposable.Dispose();
             }
+
+            GC.SuppressFinalize(this);
         }
 
         #endregion
