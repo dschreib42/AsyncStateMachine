@@ -3,7 +3,7 @@
 namespace AsyncStateMachine.Behaviours
 {
     /// <summary>
-    /// Base class for all triggers behaviors.
+    /// Base class for all trigger behaviors.
     /// </summary>
     /// <typeparam name="TTrigger">Type of trigger.</typeparam>
     /// <typeparam name="TState">Type of state.</typeparam>

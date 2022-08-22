@@ -3,7 +3,7 @@
 namespace AsyncStateMachine.Behaviours
 {
     /// <summary>
-    /// Base interface for all common operations exposed by a triggers behavior.
+    /// Base interface for all common operations exposed by a trigger behavior.
     /// </summary>
     /// <typeparam name="TTrigger">Type of trigger.</typeparam>
     /// <typeparam name="TState">Type of state.</typeparam>

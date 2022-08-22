@@ -95,16 +95,7 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public IStateConfiguration<TTrigger, TState> Ignore(TTrigger trigger)
         {
-            if (!_triggerBehaviours.ContainsKey(trigger))
-                _triggerBehaviours.Add(trigger, new List<ITriggerBehaviour<TTrigger, TState>>());
-            else if (_triggerBehaviours[trigger].Any(x => x is PermitTriggerBehaviour<TTrigger, TState> && _state.Equals(x.TargetState)))
-                throw new ArgumentException("A Permit() was already created for the same trigger", nameof(trigger));
-            else if (_triggerBehaviours[trigger].Any(x => x is PermitIfTriggerBehaviour<TTrigger, TState> && _state.Equals(x.TargetState)))
-                throw new ArgumentException("A PermitIf() was already created for the same target state", nameof(trigger));
-            else if (_triggerBehaviours[trigger].Any(x => x is IgnoredTriggerBehaviour<TTrigger, TState> && _state.Equals(x.TargetState)))
-                throw new ArgumentException("The ignored trigger is already configured", nameof(trigger));
-
-            _triggerBehaviours[trigger].Add(new IgnoredTriggerBehaviour<TTrigger, TState>(_state, trigger, _state));
+            AddTriggerBehaviour(new IgnoredTriggerBehaviour<TTrigger, TState>(_state, trigger, _state));
             return this;
         }
 

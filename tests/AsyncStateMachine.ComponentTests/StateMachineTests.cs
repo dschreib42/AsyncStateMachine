@@ -381,7 +381,7 @@ namespace AsyncStateMachine.ComponentTests
         }
 
         [Fact]
-        public async Task FireAsync_PermitWithWrongTypeArgSync_Throws()
+        public Task FireAsync_PermitWithWrongTypeArgSync_Throws()
         {
             // Arrange
             _sm.Configure(State.A)
@@ -390,11 +390,11 @@ namespace AsyncStateMachine.ComponentTests
                 .OnEntry<int>(number => { });
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "wrong type"));
+            return Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "wrong type"));
         }
 
         [Fact]
-        public async Task FireAsync_PermitWithWrongTypeArgAsync_Throws()
+        public Task FireAsync_PermitWithWrongTypeArgAsync_Throws()
         {
             // Arrange
             _sm.Configure(State.A)
@@ -403,11 +403,11 @@ namespace AsyncStateMachine.ComponentTests
                 .OnEntry<int>(number => Task.CompletedTask);
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "wrong type"));
+            return Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "wrong type"));
         }
 
         [Fact]
-        public async Task FireAsync_PermitWithNoHandler_Throws()
+        public Task FireAsync_PermitWithNoHandler_Throws()
         {
             // Arrange
             _sm.Configure(State.A)
@@ -415,7 +415,7 @@ namespace AsyncStateMachine.ComponentTests
             _sm.Configure(State.B);
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "no handler"));
+            return Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "no handler"));
         }
 
         [Fact]
@@ -436,7 +436,7 @@ namespace AsyncStateMachine.ComponentTests
         }
 
         [Fact]
-        public async Task FireAsync_OnEntryThrows_CallerCatchesException()
+        public Task FireAsync_OnEntryThrows_CallerCatchesException()
         {
             // Arrange
             _sm.Configure(State.A)
@@ -445,11 +445,11 @@ namespace AsyncStateMachine.ComponentTests
                 .OnEntry(() => throw new TimeoutException());
 
             // Act & Assert
-            await Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
+            return Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
         }
 
         [Fact]
-        public async Task FireAsync_OnExitThrows_CallerCatchesException()
+        public Task FireAsync_OnExitThrows_CallerCatchesException()
         {
             // Arrange
             _sm.Configure(State.A)
@@ -458,7 +458,17 @@ namespace AsyncStateMachine.ComponentTests
             _sm.Configure(State.B);
 
             // Act & Assert
-            await Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
+            return Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
+        }
+
+        [Fact]
+        public void Dispose_DoesNot_Throw()
+        {
+            // Act
+            var exception = Record.Exception(() => _sm.Dispose());
+
+            // Assert
+            Assert.Null(exception);
         }
     }
 }

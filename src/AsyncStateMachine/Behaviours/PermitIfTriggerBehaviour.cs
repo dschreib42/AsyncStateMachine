@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace AsyncStateMachine.Behaviours
 {
     /// <summary>
-    /// Implementation of the PermitIf triggers behavior.
+    /// Implementation of the PermitIf trigger behavior.
     /// </summary>
     /// <typeparam name="TTrigger">Type of trigger.</typeparam>
     /// <typeparam name="TState">Type of state.</typeparam>
