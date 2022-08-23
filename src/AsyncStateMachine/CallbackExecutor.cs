@@ -13,12 +13,12 @@ namespace AsyncStateMachine
     internal class CallbackExecutor : ICallbackExecutor
     {
         /// <inheritdoc/>
-        public async Task ExecuteAsync(IEnumerable<ICallback> callbacks,
-                                       object parameter = null)
+        public Task ExecuteAsync(IEnumerable<ICallback> callbacks,
+                                 object parameter = null)
         {
             _ = callbacks ?? throw new ArgumentNullException(nameof(callbacks));
 
-            await Task.WhenAll(callbacks.Select(x => x.ExecuteAsync(parameter)));
+            return Task.WhenAll(callbacks.Select(x => x.ExecuteAsync(parameter)));
         }
     }
 }

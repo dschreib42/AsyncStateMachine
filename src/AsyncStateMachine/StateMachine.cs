@@ -274,11 +274,11 @@ namespace AsyncStateMachine
 
             _currentState = next;
 
-            // call entry action for new state
-            await OnEnterAsync(GetStateRepresentation(next), predicate, parameter, guard);
-
             // publish state changed
             _subject.OnNext(new Transition<TTrigger, TState>(previous, trigger, next));
+
+            // call entry action for new state
+            await OnEnterAsync(GetStateRepresentation(next), predicate, parameter, guard);
 
             return next;
         }

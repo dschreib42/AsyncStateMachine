@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -12,12 +13,14 @@ namespace AsyncStateMachine.ComponentTests
         {
             A,
             B,
+            C,
         }
 
         private enum Trigger
         {
             a,
             b,
+            c,
         }
 
         /// <summary>
@@ -459,6 +462,54 @@ namespace AsyncStateMachine.ComponentTests
 
             // Act & Assert
             return Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
+        }
+
+        [Fact]
+        public async Task FireAsync_RecursiveFire_TransitionsInCorrectOrder()
+        {
+            // Arrange
+            var transitions = new List<string>();
+            using var subscription = _sm.Observable.Subscribe(t => transitions.Add($"{t.Source}{t.Trigger}{t.Destination}"));
+            _sm.Configure(State.A)
+                .Permit(Trigger.b, State.B)
+                .Permit(Trigger.c, State.C);
+            _sm.Configure(State.B)
+                .Permit(Trigger.c, State.C)
+                .OnEntry(() => _sm.FireAsync(Trigger.c));
+            _sm.Configure(State.C);
+            await _sm.InitializeAsync(State.A);
+
+            // Act
+            await _sm.FireAsync(Trigger.b);
+
+            // Assert
+            Assert.Equal(new[] { "A", "AbB", "BcC" }, transitions);
+        }
+
+        [Fact]
+        public async Task FireAsync_RecursiveFire_NodesVisitedInCorrectOrder()
+        {
+            // Arrange
+            var visited = new List<string>();
+            _sm.Configure(State.A)
+                .Permit(Trigger.b, State.B)
+                .Permit(Trigger.c, State.C)
+                .OnEntry(() => visited.Add("<A"))
+                .OnExit(() => visited.Add("A>"));
+            _sm.Configure(State.B)
+                .Permit(Trigger.c, State.C)
+                .OnEntry(() => visited.Add("<B"))
+                .OnEntry(() => _sm.FireAsync(Trigger.c))
+                .OnExit(() => visited.Add("B>"));
+            _sm.Configure(State.C)
+                .OnEntry(() => visited.Add("<C"));
+            await _sm.InitializeAsync(State.A);
+
+            // Act
+            await _sm.FireAsync(Trigger.b);
+
+            // Assert
+            Assert.Equal(new[] { "<A", "A>", "<B", "B>", "<C" }, visited);
         }
 
         [Fact]
