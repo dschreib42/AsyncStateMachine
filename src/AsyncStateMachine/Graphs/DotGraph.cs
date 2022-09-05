@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AsyncStateMachine.Contracts;
+using AsyncStateMachine.Graphs.Formatters;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -16,7 +18,9 @@ namespace AsyncStateMachine.Graphs
         /// <returns>A mermaid graph.</returns>
         /// <typeparam name="TState">The type of state.</typeparam>
         /// <typeparam name="TTrigger">The type of trigger.</typeparam>
-        public static string Format<TState, TTrigger>(IEnumerable<Transition<TTrigger, TState>> transitions)
+        /// <param name="options">Formatting options.</param>
+        public static string Format<TState, TTrigger>(IEnumerable<Transition<TTrigger, TState>> transitions,
+                                                      FormattingOptions options = FormattingOptions.None)
             where TState : struct
             where TTrigger : struct
         {
@@ -26,6 +30,10 @@ namespace AsyncStateMachine.Graphs
             var indentation = new string(' ', 4);
             var startNode = "START";
 
+            var formatter = options.HasFlag(FormattingOptions.CamelCaseFormatting)
+                ? (INameFormatter)new CamelCaseNameFormatter()
+                : (INameFormatter)new TransparentNameFormatter();
+
             sb.AppendLine("digraph G {");
             sb.AppendLine($"{indentation}rankdir = LR;");
             sb.AppendLine($"{indentation}size = \"8,5\";");
@@ -34,12 +42,19 @@ namespace AsyncStateMachine.Graphs
             {
                 if (transition.Source is null)
                 {
-                    sb.AppendLine($"{indentation}\"{startNode}\" [shape = point];");
-                    sb.AppendLine($"{indentation}\"{startNode}\" -> \"{transition.Destination}\";");
+                    var source = startNode;
+                    var destination = formatter.FormatName(transition.Destination.ToString());
+
+                    sb.AppendLine($"{indentation}\"{source}\" [shape = point];");
+                    sb.AppendLine($"{indentation}\"{source}\" -> \"{destination}\";");
                 }
                 else
                 {
-                    sb.AppendLine($"{indentation}\"{transition.Source}\" -> \"{transition.Destination}\" [label = \"{transition.Trigger}\"];");
+                    var source = transition.Source.HasValue ? formatter.FormatName(transition.Source.Value.ToString()) : null;
+                    var destination = formatter.FormatName(transition.Destination.ToString());
+                    var trigger = formatter.FormatName(transition.Trigger.ToString());
+
+                    sb.AppendLine($"{indentation}\"{source}\" -> \"{destination}\" [label = \"{trigger}\"];");
                 }
             }
 
@@ -47,5 +62,19 @@ namespace AsyncStateMachine.Graphs
 
             return sb.ToString();
         }
+    }
+
+    [Flags]
+    public enum FormattingOptions
+    {
+        /// <summary>
+        /// No fancy formatting applied.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// CamelCase to word formatting applied.
+        /// </summary>
+        CamelCaseFormatting = 1,
     }
 }

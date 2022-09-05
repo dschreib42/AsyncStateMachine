@@ -15,7 +15,7 @@
     <Copyright>Copyright 2021 Dirk Schreiber</Copyright>
     <Authors>Dirk Schreiber</Authors>
     <Description>A lightweight state machine framework for .Net/.NetCore</Description>
-    <VersionPrefix>1.1.2</VersionPrefix>
+    <VersionPrefix>1.2.0</VersionPrefix>
     <Tags>state machine async</Tags>
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <license>http://www.apache.org/licenses/LICENSE-2.0</license>
