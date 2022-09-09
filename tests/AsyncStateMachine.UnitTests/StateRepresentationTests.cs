@@ -3,9 +3,9 @@ using Xunit;
 
 namespace AsyncStateMachine.UnitTests
 {
-    public class StateRepresentationTests
+    public sealed class StateConfigurationTests
     {
-        private readonly StateRepresentation<Trigger, State> _sr;
+        private readonly StateConfiguration<Trigger, State> _sr;
 
         public enum State
         {
@@ -20,11 +20,11 @@ namespace AsyncStateMachine.UnitTests
         };
 
         /// <summary>
-        /// Initializes a new instance of a <see cref="StateRepresentationTests"/> class.
+        /// Initializes a new instance of a <see cref="StateConfigurationTests"/> class.
         /// </summary>
-        public StateRepresentationTests()
+        public StateConfigurationTests()
         {
-            _sr = new StateRepresentation<Trigger, State>(State.A);
+            _sr = new StateConfiguration<Trigger, State>(State.A);
         }
 
         [Fact]

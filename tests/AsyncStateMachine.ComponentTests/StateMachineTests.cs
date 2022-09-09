@@ -7,6 +7,7 @@ namespace AsyncStateMachine.ComponentTests
 {
     public class StateMachineTests
     {
+        private readonly StateMachineConfiguration<Trigger, State> _config;
         private readonly StateMachine<Trigger, State> _sm;
 
         private enum State
@@ -28,67 +29,28 @@ namespace AsyncStateMachine.ComponentTests
         /// </summary>
         public StateMachineTests()
         {
-            _sm = new StateMachine<Trigger, State>(State.A);
+            _config = new StateMachineConfiguration<Trigger, State>(State.A);
+            _sm = new StateMachine<Trigger, State>(_config);
         }
 
         [Fact]
-        public void Configure_Returns_NotNull()
-        {
-            // Act
-            var result = _sm.Configure(State.A);
-
-            // Assert
-            Assert.NotNull(result);
-        }
-
-        [Fact]
-        public void Configure_DuplicateSubstateOf_Throws()
-        {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(
-                () => _sm.Configure(State.A).SubstateOf(State.B).SubstateOf(State.B));
-        }
-
-        [Fact]
-        public void Configure_DuplicatePermit_Throws()
-        {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(
-                () => _sm.Configure(State.A).Permit(Trigger.a, State.B).Permit(Trigger.a, State.B));
-        }
-
-        [Fact]
-        public void Configure_PermitAndPermitIf_Throws()
-        {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(
-                () => _sm.Configure(State.A).Permit(Trigger.a, State.B).PermitIf(Trigger.a, State.B, () => true));
-        }
-
-        [Fact]
-        public void Configure_DuplicatePermitIf_Throws()
-        {
-            // Act & Assert
-            Assert.Throws<ArgumentException>(
-                () => _sm.Configure(State.A).PermitIf(Trigger.a, State.B, () => false).PermitIf(Trigger.a, State.B, () => true));
-        }
-
-        [Fact]
-        public Task FireAsync_InvalidTrigger_Throws()
+        public async Task FireAsync_InvalidTrigger_Throws()
         {
             // Arrange
-            var result = _sm.Configure(State.A);
+            var result = _config.Configure(State.A);
+            await _sm.InitializeAsync(State.A);
 
             // Act & Assert
-            return Assert.ThrowsAsync<InvalidOperationException>(() => _sm.FireAsync(Trigger.a));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _sm.FireAsync(Trigger.a));
         }
 
         [Fact]
         public async Task FireAsync_Reentry_NoStateChange()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .PermitReentry(Trigger.a);
+            await _sm.InitializeAsync(State.A);
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -101,8 +63,9 @@ namespace AsyncStateMachine.ComponentTests
         public async Task FireAsync_Ignore_NoStateChange()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Ignore(Trigger.a);
+            await _sm.InitializeAsync(State.A);
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -112,25 +75,12 @@ namespace AsyncStateMachine.ComponentTests
         }
 
         [Fact]
-        public async Task InitializeAsync_ValidState_CorrectState()
-        {
-            // Arrange
-            _sm.Configure(State.A);
-            _sm.Configure(State.B);
-
-            // Act
-            await _sm.InitializeAsync(State.B);
-
-            // Assert
-            Assert.Equal(State.B, _sm.CurrentState);
-        }
-
-        [Fact]
         public async Task CanFireAsync_InvalidTrigger_False()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .PermitReentry(Trigger.a);
+            await _sm.InitializeAsync();
 
             // Act
             var result = await _sm.CanFireAsync(Trigger.b);
@@ -143,8 +93,9 @@ namespace AsyncStateMachine.ComponentTests
         public async Task CanFireAsync_ValidTrigger_True()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .PermitReentry(Trigger.a);
+            await _sm.InitializeAsync();
 
             // Act
             var result = await _sm.CanFireAsync(Trigger.a);
@@ -157,12 +108,13 @@ namespace AsyncStateMachine.ComponentTests
         public async Task FireAsync_Reentry_OnEntryCalled()
         {
             // Arrange
-            var syncCalled = 0;
-            var asyncCalled = 0;
-            _sm.Configure(State.A)
+            var syncCalled = -1;
+            var asyncCalled = -1;
+            _config.Configure(State.A)
                 .PermitReentry(Trigger.a)
                 .OnEntry(() => syncCalled++)
                 .OnEntry(() => { asyncCalled++; return Task.CompletedTask; });
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -178,10 +130,11 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             var syncCalled = 0;
             var asyncCalled = 0;
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .PermitReentry(Trigger.a)
                 .OnExit(() => syncCalled++)
                 .OnExit(() => { asyncCalled++; return Task.CompletedTask; });
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -195,12 +148,13 @@ namespace AsyncStateMachine.ComponentTests
         public async Task FireAsync_Ignore_OnEntryNotCalled()
         {
             // Arrange
-            var syncCalled = 0;
-            var asyncCalled = 0;
-            _sm.Configure(State.A)
+            var syncCalled = -1;
+            var asyncCalled = -1;
+            _config.Configure(State.A)
                 .Ignore(Trigger.a)
                 .OnEntry(() => syncCalled++)
                 .OnEntry(() => { asyncCalled++; return Task.CompletedTask; });
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -216,10 +170,11 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             var syncCalled = 0;
             var asyncCalled = 0;
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Ignore(Trigger.a)
                 .OnExit(() => syncCalled++)
                 .OnExit(() => { syncCalled++; return Task.CompletedTask; });
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -235,11 +190,12 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             var syncCalled = 0;
             var asyncCalled = 0;
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B)
                 .OnExit(() => syncCalled++)
                 .OnExit(() => { asyncCalled++; return Task.CompletedTask; });
-            _sm.Configure(State.B);
+            _config.Configure(State.B);
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -256,11 +212,12 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             var syncCalled = 0;
             var asyncCalled = 0;
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .OnEntry(() => syncCalled++)
                 .OnEntry(() => { asyncCalled++; return Task.CompletedTask; });
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -277,11 +234,12 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             var syncCalled = 0;
             var asyncCalled = 0;
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .PermitIf(Trigger.a, State.B, () => true);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .OnEntry(() => syncCalled++)
                 .OnEntry(() => { asyncCalled++; return Task.CompletedTask; });
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a);
@@ -296,9 +254,10 @@ namespace AsyncStateMachine.ComponentTests
         public async Task FireAsync_PermitIfFalse_Throws()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .PermitIf(Trigger.a, State.B, () => false);
-            _sm.Configure(State.B);
+            _config.Configure(State.B);
+            await _sm.InitializeAsync();
 
             // Act
             var exception = await Record.ExceptionAsync(() => _sm.FireAsync(Trigger.a));
@@ -313,10 +272,11 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             var sent = Guid.NewGuid().ToString();
             var received = string.Empty;
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .OnEntry<string>(str => received = str);
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a, sent);
@@ -332,10 +292,11 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             var sent = Guid.NewGuid().ToString();
             var received = string.Empty;
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .OnEntry<string>(str => { received = str; return Task.CompletedTask; });
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a, sent);
@@ -351,10 +312,11 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             const int sent = 42;
             var received = 0;
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .OnEntry<int>(number => received = number);
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a, sent);
@@ -370,10 +332,11 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             const int sent = 42;
             var received = 0;
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .OnEntry<int>(number => { received = number; return Task.CompletedTask; });
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.a, sent);
@@ -384,52 +347,56 @@ namespace AsyncStateMachine.ComponentTests
         }
 
         [Fact]
-        public Task FireAsync_PermitWithWrongTypeArgSync_Throws()
+        public async Task FireAsync_PermitWithWrongTypeArgSync_Throws()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .OnEntry<int>(number => { });
+            await _sm.InitializeAsync();
 
             // Act & Assert
-            return Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "wrong type"));
+            await Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "wrong type"));
         }
 
         [Fact]
-        public Task FireAsync_PermitWithWrongTypeArgAsync_Throws()
+        public async Task FireAsync_PermitWithWrongTypeArgAsync_Throws()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .OnEntry<int>(number => Task.CompletedTask);
+            await _sm.InitializeAsync();
 
             // Act & Assert
-            return Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "wrong type"));
+            await Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "wrong type"));
         }
 
         [Fact]
-        public Task FireAsync_PermitWithNoHandler_Throws()
+        public async Task FireAsync_PermitWithNoHandler_Throws()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B);
-            _sm.Configure(State.B);
+            _config.Configure(State.B);
+            await _sm.InitializeAsync();
 
             // Act & Assert
-            return Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "no handler"));
+            await Assert.ThrowsAsync<ArgumentException>(() => _sm.FireAsync(Trigger.a, "no handler"));
         }
 
         [Fact]
         public async Task FireAsync_OnEntry_FireAgain()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.b, State.B);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .Permit(Trigger.a, State.A)
                 .OnEntry(() => _sm.FireAsync(Trigger.a));
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.b);
@@ -439,29 +406,31 @@ namespace AsyncStateMachine.ComponentTests
         }
 
         [Fact]
-        public Task FireAsync_OnEntryThrows_CallerCatchesException()
+        public async Task FireAsync_OnEntryThrows_CallerCatchesException()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .OnEntry(() => throw new TimeoutException());
+            await _sm.InitializeAsync();
 
             // Act & Assert
-            return Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
+            await Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
         }
 
         [Fact]
-        public Task FireAsync_OnExitThrows_CallerCatchesException()
+        public async Task FireAsync_OnExitThrows_CallerCatchesException()
         {
             // Arrange
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.a, State.B)
                 .OnExit(() => throw new TimeoutException());
-            _sm.Configure(State.B);
+            _config.Configure(State.B);
+            await _sm.InitializeAsync();
 
             // Act & Assert
-            return Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
+            await Assert.ThrowsAsync<TimeoutException>(() => _sm.FireAsync(Trigger.a));
         }
 
         [Fact]
@@ -470,14 +439,14 @@ namespace AsyncStateMachine.ComponentTests
             // Arrange
             var transitions = new List<string>();
             using var subscription = _sm.Observable.Subscribe(t => transitions.Add($"{t.Source}{t.Trigger}{t.Destination}"));
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.b, State.B)
                 .Permit(Trigger.c, State.C);
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .Permit(Trigger.c, State.C)
                 .OnEntry(() => _sm.FireAsync(Trigger.c));
-            _sm.Configure(State.C);
-            await _sm.InitializeAsync(State.A);
+            _config.Configure(State.C);
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.b);
@@ -491,35 +460,25 @@ namespace AsyncStateMachine.ComponentTests
         {
             // Arrange
             var visited = new List<string>();
-            _sm.Configure(State.A)
+            _config.Configure(State.A)
                 .Permit(Trigger.b, State.B)
                 .Permit(Trigger.c, State.C)
                 .OnEntry(() => visited.Add("<A"))
                 .OnExit(() => visited.Add("A>"));
-            _sm.Configure(State.B)
+            _config.Configure(State.B)
                 .Permit(Trigger.c, State.C)
                 .OnEntry(() => visited.Add("<B"))
                 .OnEntry(() => _sm.FireAsync(Trigger.c))
                 .OnExit(() => visited.Add("B>"));
-            _sm.Configure(State.C)
+            _config.Configure(State.C)
                 .OnEntry(() => visited.Add("<C"));
-            await _sm.InitializeAsync(State.A);
+            await _sm.InitializeAsync();
 
             // Act
             await _sm.FireAsync(Trigger.b);
 
             // Assert
             Assert.Equal(new[] { "<A", "A>", "<B", "B>", "<C" }, visited);
-        }
-
-        [Fact]
-        public void Dispose_DoesNot_Throw()
-        {
-            // Act
-            var exception = Record.Exception(() => _sm.Dispose());
-
-            // Assert
-            Assert.Null(exception);
         }
     }
 }

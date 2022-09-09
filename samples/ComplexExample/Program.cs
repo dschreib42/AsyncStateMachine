@@ -21,39 +21,41 @@ namespace ComplexExample
 
         public static async Task Main()
         {
-            using var sm = new StateMachine<Trigger, State>();
-
             var triggerSelector = true;
 
-            sm.Configure(State.Start)
+            var config = new StateMachineConfiguration<Trigger, State>(State.Start);
+
+            config.Configure(State.Start)
                 .PermitIf(Trigger.ab, State.A, () => triggerSelector)
                 .PermitIf(Trigger.ab, State.B, () => !triggerSelector)
                 .OnEntry(() => Console.WriteLine("\n\nEntered Start"))
                 .OnExit(() => Console.WriteLine("Exited Start"));
 
-            sm.Configure(State.A)
+            config.Configure(State.A)
                 .Permit(Trigger.stop, State.Stop)
                 .OnEntry(() => Console.WriteLine("Entered A"))
                 .OnExit(() => Console.WriteLine("Exited A"));
 
-            sm.Configure(State.B)
+            config.Configure(State.B)
                 .Permit(Trigger.stop, State.Stop)
                 .OnEntry(() => Console.WriteLine("Entered B"))
                 .OnExit(() => Console.WriteLine("Exited B"));
 
-            sm.Configure(State.Stop)
+            config.Configure(State.Stop)
                 .Ignore(Trigger.stop)
                 .OnEntry<string>(text => Console.WriteLine($"Entered Stop ({text})"));
+
+            using var sm = new StateMachine<Trigger, State>(config);
 
             var rand = new Random();
 
             using var _ = sm.Observable.Subscribe(OnTransitioned);
             {
-                await sm.InitializeAsync(State.Start);
+                await sm.InitializeAsync();
 
-                Console.WriteLine(DotGraph.Format(sm.Transitions));
-                Console.WriteLine(MermaidStateGraph.Format(sm.Transitions));
-                Console.WriteLine(MermaidFlowChartGraph.Format(sm.Transitions));
+                Console.WriteLine(DotGraph.Format(config));
+                Console.WriteLine(MermaidStateGraph.Format(config));
+                Console.WriteLine(MermaidFlowChartGraph.Format(config));
 
                 while (true)
                 {

@@ -3,15 +3,15 @@
 **A framework for creating *state machines* and lightweight *state machine-based workflows* for Microsoft .NET**
 
 ```csharp
-// Instantiate a new state machine in the Open state
-var stateMachine = new StateMachine<Trigger, State>(State.Open);
+// Create a state machine configuration with the initial Open state.
+var config = new StateMachineConfiguration<Trigger, State>(State.Open);
 
 // Configure the Open state
-stateMachine.Configure(State.Open)
+config.Configure(State.Open)
     .Permit(Trigger.assign, State.Assigned);
 
 // Configure the Assigned state
-stateMachine.Configure(State.Assigned)
+config.Configure(State.Assigned)
     .PermitReentry(Trigger.assign)
     .Permit(Trigger.close, State.Closed)
     .Permit(Trigger.defer, State.Deferred)
@@ -19,15 +19,21 @@ stateMachine.Configure(State.Assigned)
     .OnExit(OnDeassignedAsync); // asynchronous without parameter
 
 // Configure the Deferred state
-stateMachine.Configure(State.Deferred)
+config.Configure(State.Deferred)
     .OnEntry(() => _assignee = null) // synchronous
     .Permit(Trigger.assign, State.Assigned);
 
 // Configure the Closed state
-stateMachine.Configure(State.Closed)
+config.Configure(State.Closed)
     .OnEntry(() => Console.WriteLine("Bug is closed"));
 
 // ...
+
+// Instantiate a new state machine using the previously created configuration.
+var stateMachine = new StateMachine<Trigger, State>(config);
+
+// initialize the state machine to invoke the OnEntry callback for the initial state.
+await stateMachine.IntializeAsync();
 
 await stateMachine.FireAsync(Trigger.assign); // asynchronous
 Assert.AreEqual(State.Assigned, stateMachine.CurrentState);
@@ -57,7 +63,7 @@ Some useful extensions are also provided:
 
 ```csharp
 // Configure the Assigned state
-stateMachine.Configure(State.Assigned)
+config.Configure(State.Assigned)
     .Permit(Trigger.assign, State.Assigned)
     .Permit(Trigger.close, State.Closed)
     .Permit(Trigger.defer, State.Deferred)
@@ -65,15 +71,15 @@ stateMachine.Configure(State.Assigned)
     .OnExit(OnDeassignedAsync); // asynchronous without parameter
 ```
 
-Entry/Exit actions can be used to apply certain functionality when a certain state is reached. The OnEntry() calls are all invoked when the state is reached and all OnExit() calls are invoked, when the state is changed. OnEntry() calls support sychronous and asynchronous functions as well as parameterized versions. Currently,
-only a single parameter is supported. If several parameters are needed, then these must be encapsulated in a class/struct/pair.
+Entry/Exit actions can be used to apply certain functionality when a certain state is reached. The OnEntry() calls are all invoked when the state is reached and all OnExit() calls are invoked, when the state is changed. OnEntry() calls support synchronous and asynchronous functions as well as parameterized versions. Currently,
+only a single parameter is supported. If several parameters are needed, then these must be encapsulated in a class/struct/pair. When multiple OnEntry/OnExit callbacks are registered, then all of them are executed in the order of registration.
 
 ### Guard Clauses
 
 The state machine will choose between multiple transitions based on guard clauses, e.g.:
 
 ```csharp
-stateMachine.Configure(State.SomeState)
+config.Configure(State.SomeState)
     .PermitIf(Trigger.ab, State.A, () => Condition)
     .PermitIf(Trigger.ab, State.B, () => !Condition);
 ```
@@ -87,8 +93,10 @@ The guard clauses will be evaluated whenever a trigger is fired. Guards should t
 A strongly-typed parameter can be assigned to trigger:
 
 ```csharp
-stateMachine.Configure(State.Assigned)
+config.Configure(State.Assigned)
     .OnEntry<string>(email => OnAssigned(email));
+
+// ...
 
 await stateMachine.FireAsync(assignTrigger, "john.doe@example.com");
 ```
@@ -104,14 +112,14 @@ Firing a trigger that does not have an allowed transition associated with it wil
 To ignore triggers within certain states, use the `Ignore(...)` directive:
 
 ```csharp
-stateMachine.Configure(State.Closed)
+config.Configure(State.Closed)
     .Ignore(Trigger.close);
 ```
 
 Alternatively, a state can be marked reentrant so its entry and exit actions will fire even when transitioning from/to itself:
 
 ```csharp
-stateMachine.Configure(State.Assigned)
+config.Configure(State.Assigned)
     .PermitReentry(Trigger.assign)
     .OnEntry(() => SendEmailToAssignee());
 ```
@@ -121,10 +129,10 @@ By default, triggers must be ignored explicitly. Otherwise an exception (Invalid
 ### State Hierarchy
 
 ```csharp
-stateMachine.Configure(State.A);
-stateMachine.Configure(State.B)
+config.Configure(State.A);
+config.Configure(State.B)
     .SubstateOf(A);
-stateMachine.Configure(State.C)
+config.Configure(State.C)
     .SubstateOf(B);
 ```
 
@@ -151,14 +159,12 @@ The observable is invoked, whenever the state machine state has changed.
 ### Export as graph
 
 It can be useful to visualize state machines. With this approach the code is the authoritative source and state diagrams are always up-to-date.
-Therefore AsyncStateMachine supports different graph engines like:
-* Graphviz
-* Mermaid
+Therefore AsyncStateMachine supports different graph engines like: Graphviz and Mermaid
 
 #### Graphviz
 
 ```csharp
-string graph = DotGraph.Format(stateMachine.Transitions);
+string graph = DotGraph.Format(config);
 ```
 
 The `DotGraph.Format()` method returns a string representation of the state machine in the [DOT graph language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).
@@ -168,13 +174,13 @@ This can then be rendered by tools that support the DOT graph language, such as 
 #### Mermaid
 
 ```csharp
-string graph = MermaidStateGraph.Format(stateMachine.Transitions);
+string graph = MermaidStateGraph.Format(config);
 ```
 
 or 
 
 ```csharp
-string graph = MermaidFlowChartGraph.Format(stateMachine.Transitions);
+string graph = MermaidFlowChartGraph.Format(config);
 ```
 
 The `Mermaid*Graph.Format()` methods return a string representation of the state machine in the [Mermaid graph language](https://mermaid-js.github.io)).

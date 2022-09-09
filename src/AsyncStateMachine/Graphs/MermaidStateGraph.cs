@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace AsyncStateMachine.Graphs
@@ -12,15 +11,15 @@ namespace AsyncStateMachine.Graphs
         /// <summary>
         /// Plots a mermaid state graph.
         /// </summary>
-        /// <param name="transitions">The enumeration of transitions.</param>
+        /// <param name="configuration">An instance of a <see cref="StateConfiguration{TTrigger, TState}"/>.</param>
         /// <returns>A mermaid graph.</returns>
         /// <typeparam name="TState">The type of state.</typeparam>
         /// <typeparam name="TTrigger">The type of trigger.</typeparam>
-        public static string Format<TState, TTrigger>(IEnumerable<Transition<TTrigger, TState>> transitions)
+        public static string Format<TState, TTrigger>(StateMachineConfiguration<TTrigger, TState> configuration)
             where TState : struct
             where TTrigger : struct
         {
-            _ = transitions ?? throw new ArgumentNullException(nameof(transitions));
+            _ = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             var sb = new StringBuilder();
 
@@ -28,7 +27,7 @@ namespace AsyncStateMachine.Graphs
 
             var indentation = new string(' ', 4);
 
-            foreach (var transition in transitions)
+            foreach (var transition in configuration.Transitions)
             {
                 var startState = transition.Source.HasValue
                     ? transition.Source.Value.ToString()
