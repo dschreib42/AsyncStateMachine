@@ -32,11 +32,11 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public IStateConfiguration<TTrigger, TState> Configure(TState state)
         {
-            var representation = new StateConfiguration<TTrigger, TState>(state);
+            var configuration = new StateConfiguration<TTrigger, TState>(state);
 
-            _states.Add(state, representation);
+            _states.Add(state, configuration);
 
-            return representation;
+            return configuration;
         }
 
         /// <inheritdoc/>
@@ -46,9 +46,9 @@ namespace AsyncStateMachine
             {
                 yield return new Transition<TTrigger, TState>(null, null, _initialState);
 
-                foreach (var representation in _states.Values)
+                foreach (var configuration in _states.Values)
                 {
-                    foreach (var transition in representation.Transitions)
+                    foreach (var transition in configuration.Transitions)
                     {
                         yield return transition;
                     }
@@ -86,8 +86,8 @@ namespace AsyncStateMachine
         /// <returns>An instance of a <see cref="StateConfiguration{TTrigger, TState}"/>.</returns>
         internal StateConfiguration<TTrigger, TState> GetStateConfiguration(TState state)
         {
-            return _states.TryGetValue(state, out var representation)
-                ? representation
+            return _states.TryGetValue(state, out var configuration)
+                ? configuration
                 : throw new ArgumentException($"State not found: '{state}'", nameof(state));
         }
     }

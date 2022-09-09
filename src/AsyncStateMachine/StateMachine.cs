@@ -88,11 +88,11 @@ namespace AsyncStateMachine
             using (await _asyncLock.LockAsync())
             {
                 var targetState = state.HasValue ? state.Value : _configuration.InitialState;
-                var representation = _configuration.GetStateConfiguration(targetState);
+                var configuration = _configuration.GetStateConfiguration(targetState);
 
                 _currentState = targetState;
 
-                await OnEnterAsync(representation, PredicateWithoutParam);
+                await OnEnterAsync(configuration, PredicateWithoutParam);
 
                 // publish state changed
                 _subject.OnNext(new Transition<TTrigger, TState>(null, null, _configuration.InitialState));
@@ -225,9 +225,9 @@ namespace AsyncStateMachine
                                                      object parameter = null,
                                                      Action<IList<ICallback>> guard = null)
         {
-            var representation = _configuration.GetStateConfiguration(previous);
+            var configuration = _configuration.GetStateConfiguration(previous);
 
-            var (canBeFired, nextState) = await representation.CanFireAsync(trigger);
+            var (canBeFired, nextState) = await configuration.CanFireAsync(trigger);
             if (!canBeFired)
             {
                 return nextState ?? throw new InvalidOperationException("Failed to find a matching trigger");
@@ -249,22 +249,22 @@ namespace AsyncStateMachine
             return next;
         }
 
-        private Task OnEnterAsync(StateConfiguration<TTrigger, TState> representation,
+        private Task OnEnterAsync(StateConfiguration<TTrigger, TState> configuration,
                                   Func<ICallback, bool> predicate,
                                   object parameter = null,
                                   Action<IList<ICallback>> guard = null)
         {
-            var callbacks = _filter.Filter(representation.OnEntryCallbacks, predicate, guard);
+            var callbacks = _filter.Filter(configuration.OnEntryCallbacks, predicate, guard);
 
             return _executor.ExecuteAsync(callbacks, parameter);
         }
 
-        private Task OnExitAsync(StateConfiguration<TTrigger, TState> representation,
+        private Task OnExitAsync(StateConfiguration<TTrigger, TState> configuration,
                                  Func<ICallback, bool> predicate,
                                  object parameter = null,
                                  Action<IList<ICallback>> guard = null)
         {
-            var callbacks = _filter.Filter(representation.OnExitCallbacks, predicate, guard);
+            var callbacks = _filter.Filter(configuration.OnExitCallbacks, predicate, guard);
 
             return _executor.ExecuteAsync(callbacks, parameter);
         }
