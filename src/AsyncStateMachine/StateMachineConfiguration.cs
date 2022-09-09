@@ -59,6 +59,9 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public void Validate()
         {
+            if (!HasState(_initialState))
+                throw new Exception($"The initial state '{InitialState} is not configured");
+
             foreach (var transition in Transitions)
             {
                 if (transition.Source.HasValue && !HasState(transition.Source.Value))

@@ -82,5 +82,12 @@ namespace AsyncStateMachine.UnitTests
             Assert.Throws<ArgumentException>(
                 () => _config.Configure(State.A).PermitIf(Trigger.a, State.B, () => false).PermitIf(Trigger.a, State.B, () => true));
         }
+
+        [Fact]
+        public void Validate_InitialStateNotConfigured_Throws()
+        {
+            // Act & Assert
+            Assert.Throws<Exception>(() => _config.Validate());
+        }
     }
 }
