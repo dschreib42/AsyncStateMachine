@@ -27,7 +27,6 @@ namespace AsyncStateMachine
         private readonly AsyncLock _asyncLock;
 
         private TState? _currentState;
-        private bool _initialized;
 
         #endregion
 
