@@ -83,13 +83,14 @@ namespace AsyncStateMachine
             if (state.HasValue && !_configuration.HasState(state.Value))
                 throw new ArgumentException("State not configured");
 
+            _configuration.Validate();
+
             using (await _asyncLock.LockAsync())
             {
-                _configuration.Validate();
+                var targetState = state.HasValue ? state.Value : _configuration.InitialState;
+                var representation = _configuration.GetStateConfiguration(targetState);
 
-                var representation = _configuration.GetStateConfiguration(_configuration.InitialState);
-
-                _currentState = state.HasValue ? state.Value : _configuration.InitialState;
+                _currentState = targetState;
 
                 await OnEnterAsync(representation, PredicateWithoutParam);
 
