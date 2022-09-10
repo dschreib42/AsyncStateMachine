@@ -222,14 +222,10 @@ namespace AsyncStateMachine
         #region Helper methods
 
         private Task<TState> FireAsync(TTrigger trigger, TState previous)
-        {
-            return PerformTransition(previous, trigger, PredicateWithoutParam);
-        }
+            => PerformTransition(previous, trigger, PredicateWithoutParam);
 
         private Task<TState> FireAsync<TParam>(TTrigger trigger, TState previous, TParam param)
-        {
-            return PerformTransition(previous, trigger, PredicateWithParam<TParam>, param, MinCallbacksGuard);
-        }
+            => PerformTransition(previous, trigger, PredicateWithParam<TParam>, param, MinCallbacksGuard);
 
         private async Task<TState> PerformTransition(TState previous,
                                                      TTrigger trigger,
