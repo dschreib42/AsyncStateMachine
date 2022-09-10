@@ -12,9 +12,9 @@ namespace AsyncStateMachine
     internal sealed class CallbackFilter : ICallbackFilter
     {
         /// <inheritdoc/>
-        public IReadOnlyCollection<ICallback> Filter(IReadOnlyCollection<ICallback> available,
-                                                     Func<ICallback, bool> predicate,
-                                                     Action<IReadOnlyCollection<ICallback>> guard = null)
+        public IEnumerable<ICallback> Filter(IEnumerable<ICallback> available,
+                                             Func<ICallback, bool> predicate,
+                                             Action<IReadOnlyCollection<ICallback>> guard = null)
         {
             _ = available ?? throw new ArgumentNullException(nameof(available));
             _ = predicate ?? throw new ArgumentNullException(nameof(predicate));
