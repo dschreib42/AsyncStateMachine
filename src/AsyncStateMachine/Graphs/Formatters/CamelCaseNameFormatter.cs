@@ -6,7 +6,7 @@ namespace AsyncStateMachine.Graphs.Formatters
     /// <summary>
     /// Implements a <see cref="INameFormatter"/> supporting Camel-Case notation.
     /// </summary>
-    internal class CamelCaseNameFormatter : INameFormatter
+    internal sealed class CamelCaseNameFormatter : INameFormatter
     {
         private readonly Regex _regex;
 

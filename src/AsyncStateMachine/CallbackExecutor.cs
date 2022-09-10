@@ -10,7 +10,7 @@ namespace AsyncStateMachine
     /// <summary>
     /// Implementation of a <see cref="ICallbackExecutor"/>.
     /// </summary>
-    internal class CallbackExecutor : ICallbackExecutor
+    internal sealed class CallbackExecutor : ICallbackExecutor
     {
         /// <inheritdoc/>
         public Task ExecuteAsync(IEnumerable<ICallback> callbacks,

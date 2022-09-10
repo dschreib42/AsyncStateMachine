@@ -5,7 +5,7 @@
     /// </summary>
     /// <typeparam name="TTrigger">Type of trigger</typeparam>
     /// <typeparam name="TState">Type of state.</typeparam>
-    public class Transition<TTrigger, TState>
+    public sealed class Transition<TTrigger, TState>
         where TTrigger : struct
         where TState : struct
     {
