@@ -99,10 +99,17 @@ namespace AsyncStateMachine.Contracts
         IStateConfiguration<TTrigger, TState> OnExit(Func<Task> func);
 
         /// <summary>
-        /// Marks the current state as substate of the given parentState.
+        /// Marks the current state as sub-state of the given parentState.
         /// </summary>
         /// <param name="parentState">The parent state of the current state</param>
         /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
         IStateConfiguration<TTrigger, TState> SubstateOf(TState parentState);
+
+        /// <summary>
+        /// Validates if the trigger can be fired.
+        /// </summary>
+        /// <param name="trigger">The trigger which should be checked.</param>
+        /// <returns>A tuple for which indicates if the trigger can be fired and what state will be set afterwards.</returns>
+        Task<(bool, TState?)> CanFireAsync(TTrigger trigger);
     }
 }

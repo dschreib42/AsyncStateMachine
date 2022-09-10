@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AsyncStateMachine.Contracts
@@ -19,21 +18,19 @@ namespace AsyncStateMachine.Contracts
         IObservable<Transition<TTrigger, TState>> Observable { get; }
 
         /// <summary>
-        /// Retrieve all configured transitions describing the state machine.
-        /// </summary>
-        IEnumerable<Transition<TTrigger, TState>> Transitions { get; }
-
-        /// <summary>
         /// Gets the current state of the state machine.
         /// </summary>
         TState? CurrentState { get; }
 
         /// <summary>
-        /// Configures a state and its triggers/transitions.
+        /// Initializes the state machine.
         /// </summary>
-        /// <param name="state">State to configure.</param>
-        /// <returns>An instance of a <see cref="IStateConfiguration{TTrigger, TState}"/>.</returns>
-        IStateConfiguration<TTrigger, TState> Configure(TState state);
+        /// <param name="state">
+        /// If not null the desired state to restore or the initial state defined in the
+        /// <see cref="StateConfiguration{TTrigger, TState}"/>.
+        /// </param>
+        /// <returns>A task that completes, when the state machine is initialized.</returns>
+        Task InitializeAsync(TState? state = null);
 
         /// <summary>
         /// Checks if the state machine is in the given state.
@@ -43,6 +40,13 @@ namespace AsyncStateMachine.Contracts
         /// <param name="maxDepth">Max. depth of hierarchy.</param>
         /// <returns><c>True</c> if state is active, otherwise <c>False</c>.</returns>
         Task<bool> InStateAsync(TState state, ushort maxDepth = 5);
+
+        /// <summary>
+        /// Validates if the specified trigger can be fired.
+        /// </summary>
+        /// <param name="trigger">The trigger to validate.</param>
+        /// <returns><c>True</c>, if the trigger can be fired, otherwise <c>False</c>.</returns>
+        Task<bool> CanFireAsync(TTrigger trigger);
 
         /// <summary>
         /// Triggers a state change.
@@ -60,23 +64,9 @@ namespace AsyncStateMachine.Contracts
         Task FireAsync<TParam>(TTrigger trigger, TParam parameter);
 
         /// <summary>
-        /// Initializes the state machine.
-        /// </summary>
-        /// <param name="initialState">The initial state of the state machine.</param>
-        /// <returns>A task that completes, when the state machine is initialized.</returns>
-        Task InitializeAsync(TState initialState);
-
-        /// <summary>
         /// Resets the state machine to the initial state.
         /// </summary>
-        /// <returns>A task that completes, when the state machine has been reset..</returns>
+        /// <returns>A task that completes, when the state machine has been reseted.</returns>
         Task ResetAsync();
-
-        /// <summary>
-        /// Validates if the specified trigger can be fired.
-        /// </summary>
-        /// <param name="trigger">The trigger to validate.</param>
-        /// <returns>True, if the trigger can be fired, false otherwise.</returns>
-        Task<bool> CanFireAsync(TTrigger trigger);
     }
 }

@@ -6,7 +6,7 @@ namespace AsyncStateMachine.Callbacks
     /// <summary>
     /// Implementation of a <see cref="ICallback"/> for parameterless actions.
     /// </summary>
-    internal class ActionCallback : ICallback
+    internal sealed class ActionCallback : ICallback
     {
         private readonly Action _action;
 

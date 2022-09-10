@@ -6,7 +6,7 @@ namespace AsyncStateMachine.Callbacks
     /// <summary>
     /// Implementation of a <see cref="ICallback"/> for actions with a single argument.
     /// </summary>
-    internal class ActionWithParamCallback<TParam> : ICallback
+    internal sealed class ActionWithParamCallback<TParam> : ICallback
     {
         private readonly Action<TParam> _action;
 

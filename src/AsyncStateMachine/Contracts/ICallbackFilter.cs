@@ -18,6 +18,6 @@ namespace AsyncStateMachine.Contracts
         /// <returns>A list of callbacks to be executed.</returns>
         IEnumerable<ICallback> Filter(IEnumerable<ICallback> available,
                                       Func<ICallback, bool> predicate,
-                                      Action<IList<ICallback>> guard = null);
+                                      Action<IReadOnlyCollection<ICallback>> guard = null);
     }
 }

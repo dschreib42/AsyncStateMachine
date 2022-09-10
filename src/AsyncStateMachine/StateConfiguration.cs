@@ -13,7 +13,7 @@ namespace AsyncStateMachine
     /// </summary>
     /// <typeparam name="TTrigger">Type of trigger.</typeparam>
     /// <typeparam name="TState">Type of state.</typeparam>
-    internal class StateRepresentation<TTrigger, TState> : IStateConfiguration<TTrigger, TState>
+    internal sealed class StateConfiguration<TTrigger, TState> : IStateConfiguration<TTrigger, TState>
         where TTrigger : struct
         where TState : struct
     {
@@ -32,10 +32,10 @@ namespace AsyncStateMachine
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of a <see cref="StateRepresentation{Trigger, State}"/> class.
+        /// Initializes a new instance of a <see cref="StateConfiguration{Trigger, State}"/> class.
         /// </summary>
         /// <param name="sourceState">The state.</param>
-        public StateRepresentation(TState sourceState)
+        public StateConfiguration(TState sourceState)
         {
             _state = sourceState;
             _parentState = null;
@@ -147,6 +147,26 @@ namespace AsyncStateMachine
             return this;
         }
 
+        /// <inheritdoc/>
+        public async Task<(bool, TState?)> CanFireAsync(TTrigger trigger)
+        {
+            if (!_triggerBehaviours.TryGetValue(trigger, out var behaviours))
+                throw new InvalidOperationException($"Invalid trigger '{trigger}' in state: '{_state}'");
+
+            foreach (var behaviour in behaviours)
+            {
+                if (await behaviour.Condition())
+                {
+                    var fire = !(behaviour is IgnoredTriggerBehaviour<TTrigger, TState>);
+                    var state = behaviour.TargetState;
+
+                    return (fire, state);
+                }
+            }
+
+            return (false, null);
+        }
+
         #endregion
 
         #region Internal methods
@@ -171,30 +191,6 @@ namespace AsyncStateMachine
         }
 
         /// <summary>
-        /// Validates if the trigger can be fired.
-        /// </summary>
-        /// <param name="trigger">The trigger which should be checked.</param>
-        /// <returns>A tuple for which indicates if the trigger can be fired and what state will be set afterwards.</returns>
-        internal async Task<(bool, TState?)> CanFireAsync(TTrigger trigger)
-        {
-            if (!_triggerBehaviours.TryGetValue(trigger, out var behaviours))
-                throw new InvalidOperationException($"Invalid trigger '{trigger}' in state: '{_state}'");
-
-            foreach (var behaviour in behaviours)
-            {
-                if (await behaviour.Condition())
-                {
-                    var fire = !(behaviour is IgnoredTriggerBehaviour<TTrigger, TState>);
-                    var state = behaviour.TargetState;
-
-                    return (fire, state);
-                }
-            }
-
-            return (false, null);
-        }
-
-        /// <summary>
         /// Returns the parent state of the current state.
         /// </summary>
         internal TState? ParentState => _parentState;
@@ -202,12 +198,12 @@ namespace AsyncStateMachine
         /// <summary>
         /// Provides all callbacks to be executed on state entry.
         /// </summary>
-        internal IEnumerable<ICallback> OnEntryCallbacks => _onEntry.ToList().AsReadOnly();
+        internal IReadOnlyCollection<ICallback> OnEntryCallbacks => _onEntry.ToList().AsReadOnly();
 
         /// <summary>
         /// Provides all callbacks to be executed on state exit.
         /// </summary>
-        internal IEnumerable<ICallback> OnExitCallbacks => _onExit.ToList().AsReadOnly();
+        internal IReadOnlyCollection<ICallback> OnExitCallbacks => _onExit.ToList().AsReadOnly();
 
         #endregion
 

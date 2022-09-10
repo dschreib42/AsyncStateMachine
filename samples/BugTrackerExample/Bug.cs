@@ -5,6 +5,7 @@ namespace BugTrackerExample
 {
     internal class Bug
     {
+        private readonly StateMachineConfiguration<Trigger, State> _configuration;
         private readonly StateMachine<Trigger, State> _machine;
         private readonly string _title;
         private string _assignee;
@@ -32,15 +33,14 @@ namespace BugTrackerExample
         {
             _title = title;
 
-            // Instantiate a new state machine in the Open state
-            _machine = new StateMachine<Trigger, State>(State.Open);
+            _configuration = new StateMachineConfiguration<Trigger, State>(State.Open);
 
             // Configure the Open state
-            _machine.Configure(State.Open)
+            _configuration.Configure(State.Open)
                 .Permit(Trigger.assign, State.Assigned);
 
             // Configure the Assigned state
-            _machine.Configure(State.Assigned)
+            _configuration.Configure(State.Assigned)
                 .PermitReentry(Trigger.assign)
                 .Permit(Trigger.close, State.Closed)
                 .Permit(Trigger.defer, State.Deferred)
@@ -48,14 +48,23 @@ namespace BugTrackerExample
                 .OnExit(OnDeAssignedAsync);
 
             // Configure the Deferred state
-            _machine.Configure(State.Deferred)
+            _configuration.Configure(State.Deferred)
                 .OnEntry(() => _assignee = null)
                 .Permit(Trigger.assign, State.Assigned);
 
             // Configure the Closed state
-            _machine.Configure(State.Closed)
+            _configuration.Configure(State.Closed)
                 .OnEntry(() => Console.WriteLine("Bug is closed"));
+
+            // Dump graph
+            //Console.WriteLine(DotGraph.Format(_configuration, FormattingOptions.CamelCaseFormatting));
+
+            // Instantiate a new state machine in the Open state
+            _machine = new StateMachine<Trigger, State>(_configuration);
         }
+
+        public Task InitializeAsync()
+            => _machine.InitializeAsync();
 
         public Task CloseAsync()
             => _machine.FireAsync(Trigger.close);
@@ -98,6 +107,6 @@ namespace BugTrackerExample
         /// Export state machine as DOT graph.
         /// </summary>
         public string ToDotGraph()
-            => DotGraph.Format(_machine.Transitions);
+            => DotGraph.Format(_configuration);
     }
 }

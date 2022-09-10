@@ -20,13 +20,12 @@ namespace AsyncStateMachine
     {
         #region Fields
 
-        private readonly Dictionary<TState, StateRepresentation<TTrigger, TState>> _states;
         private readonly ISubject<Transition<TTrigger, TState>> _subject;
         private readonly ICallbackFilter _filter;
         private readonly ICallbackExecutor _executor;
+        private readonly StateMachineConfiguration<TTrigger, TState> _configuration;
         private readonly AsyncLock _asyncLock;
 
-        private TState? _initialState;
         private TState? _currentState;
 
         #endregion
@@ -36,12 +35,12 @@ namespace AsyncStateMachine
         /// <summary>
         /// Initializes a new instance of a <see cref="StateMachine{Trigger, State}"/> class.
         /// </summary>
-        /// <param name="initialState">The initial state.</param>
-        public StateMachine(TState? initialState = null)
-            : this(new Subject<Transition<TTrigger, TState>>(),
+        /// <param name="configuration">The state machine configuration instance.</param>
+        public StateMachine(StateMachineConfiguration<TTrigger, TState> configuration)
+            : this(configuration,
+                   new Subject<Transition<TTrigger, TState>>(),
                    new CallbackFilter(),
-                   new CallbackExecutor(),
-                   initialState)
+                   new CallbackExecutor())
         {
         }
 
@@ -52,19 +51,16 @@ namespace AsyncStateMachine
         /// <param name="executor">The callback executor implementation.</param>
         /// <param name="filter">The callback filter implementation.</param>
         /// <param name="initialState">The initial state.</param>
-        internal StateMachine(ISubject<Transition<TTrigger, TState>> subject,
+        internal StateMachine(StateMachineConfiguration<TTrigger, TState> configuration,
+                              ISubject<Transition<TTrigger, TState>> subject,
                               ICallbackFilter filter,
-                              ICallbackExecutor executor,
-                              TState? initialState)
+                              ICallbackExecutor executor)
         {
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _subject = subject ?? throw new ArgumentNullException(nameof(subject));
             _filter = filter ?? throw new ArgumentNullException(nameof(filter));
             _executor = executor ?? throw new ArgumentNullException(nameof(executor));
-            _states = new Dictionary<TState, StateRepresentation<TTrigger, TState>>();
             _asyncLock = new AsyncLock();
-
-            _initialState = initialState;
-            _currentState = initialState;
         }
 
         #endregion
@@ -82,30 +78,40 @@ namespace AsyncStateMachine
         #region IStateMachine implementation
 
         /// <inheritdoc/>
-        public async Task InitializeAsync(TState initialState)
+        public async Task InitializeAsync(TState? state = null)
         {
+            if (state.HasValue && !_configuration.HasState(state.Value))
+                throw new ArgumentException("State not configured");
+
+            _configuration.Validate();
+
             using (await _asyncLock.LockAsync())
             {
-                Validate();
+                var targetState = state ?? _configuration.InitialState;
+                var configuration = _configuration.GetStateConfiguration(targetState);
 
-                var representation = GetStateRepresentation(initialState);
+                _currentState = targetState;
 
-                _initialState = initialState;
-                _currentState = initialState;
-
-                await OnEnterAsync(representation, PredicateWithoutParam);
+                await OnEnterAsync(configuration, PredicateWithoutParam);
 
                 // publish state changed
-                _subject.OnNext(new Transition<TTrigger, TState>(null, null, _initialState.Value));
+                _subject.OnNext(new Transition<TTrigger, TState>(null, null, _configuration.InitialState));
             }
         }
 
         /// <inheritdoc/>
-        public Task ResetAsync()
+        public async Task ResetAsync()
         {
-            return !_initialState.HasValue
-                ? throw new InvalidOperationException("StateMachine not yet initialized!")
-                : InitializeAsync(_initialState.Value);
+            using (await _asyncLock.LockAsync())
+            {
+                if (_currentState.HasValue)
+                {
+                    // call exit action for current state
+                    await OnExitAsync(_configuration.GetStateConfiguration(_currentState.Value), PredicateWithoutParam);
+                }
+            }
+
+            await InitializeAsync();
         }
 
         /// <inheritdoc/>
@@ -122,7 +128,7 @@ namespace AsyncStateMachine
                 var nextState = _currentState.Value;
                 for (var i = 0; i < maxDepth; i++)
                 {
-                    var parentState = GetStateRepresentation(nextState).ParentState;
+                    var parentState = _configuration.GetStateConfiguration(nextState).ParentState;
                     if (parentState.HasValue)
                     {
                         if (state.Equals(parentState))
@@ -147,10 +153,10 @@ namespace AsyncStateMachine
             {
                 using (await _asyncLock.LockAsync())
                 {
-                    if (!_currentState.HasValue || !KnowsState(_currentState.Value))
+                    if (!_currentState.HasValue || !_configuration.HasState(_currentState.Value))
                         return false;
 
-                    var result = await GetStateRepresentation(_currentState.Value).CanFireAsync(trigger);
+                    var result = await _configuration.GetStateConfiguration(_currentState.Value).CanFireAsync(trigger);
 
                     return result.Item1;
                 }
@@ -193,34 +199,6 @@ namespace AsyncStateMachine
         }
 
         /// <inheritdoc/>
-        public IStateConfiguration<TTrigger, TState> Configure(TState state)
-        {
-            var representation = new StateRepresentation<TTrigger, TState>(state);
-
-            _states.Add(state, representation);
-
-            return representation;
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<Transition<TTrigger, TState>> Transitions
-        {
-            get
-            {
-                if (_initialState.HasValue)
-                    yield return new Transition<TTrigger, TState>(null, null, _initialState.Value);
-
-                foreach (var representation in _states.Values)
-                {
-                    foreach (var transition in representation.Transitions)
-                    {
-                        yield return transition;
-                    }
-                }
-            }
-        }
-
-        /// <inheritdoc/>
         public void Dispose()
         {
             var disposables = new object[]
@@ -244,24 +222,20 @@ namespace AsyncStateMachine
         #region Helper methods
 
         private Task<TState> FireAsync(TTrigger trigger, TState previous)
-        {
-            return PerformTransition(previous, trigger, PredicateWithoutParam);
-        }
+            => PerformTransition(previous, trigger, PredicateWithoutParam);
 
         private Task<TState> FireAsync<TParam>(TTrigger trigger, TState previous, TParam param)
-        {
-            return PerformTransition(previous, trigger, PredicateWithParam<TParam>, param, MinCallbacksGuard);
-        }
+            => PerformTransition(previous, trigger, PredicateWithParam<TParam>, param, MinCallbacksGuard);
 
         private async Task<TState> PerformTransition(TState previous,
                                                      TTrigger trigger,
                                                      Func<ICallback, bool> predicate,
                                                      object parameter = null,
-                                                     Action<IList<ICallback>> guard = null)
+                                                     Action<IReadOnlyCollection<ICallback>> guard = null)
         {
-            var representation = GetStateRepresentation(previous);
+            var configuration = _configuration.GetStateConfiguration(previous);
 
-            var (canBeFired, nextState) = await representation.CanFireAsync(trigger);
+            var (canBeFired, nextState) = await configuration.CanFireAsync(trigger);
             if (!canBeFired)
             {
                 return nextState ?? throw new InvalidOperationException("Failed to find a matching trigger");
@@ -270,7 +244,7 @@ namespace AsyncStateMachine
             var next = nextState.Value;
 
             // call exit action for current state
-            await OnExitAsync(GetStateRepresentation(previous), PredicateWithoutParam);
+            await OnExitAsync(_configuration.GetStateConfiguration(previous), PredicateWithoutParam);
 
             _currentState = next;
 
@@ -278,48 +252,27 @@ namespace AsyncStateMachine
             _subject.OnNext(new Transition<TTrigger, TState>(previous, trigger, next));
 
             // call entry action for new state
-            await OnEnterAsync(GetStateRepresentation(next), predicate, parameter, guard);
+            await OnEnterAsync(_configuration.GetStateConfiguration(next), predicate, parameter, guard);
 
             return next;
         }
 
-        private bool KnowsState(TState state) => _states.ContainsKey(state);
-
-        private StateRepresentation<TTrigger, TState> GetStateRepresentation(TState state)
+        private Task OnEnterAsync(StateConfiguration<TTrigger, TState> configuration,
+                                  Func<ICallback, bool> predicate,
+                                  object parameter = null,
+                                  Action<IReadOnlyCollection<ICallback>> guard = null)
         {
-            return _states.TryGetValue(state, out var representation)
-                ? representation
-                : throw new ArgumentException($"State not found: '{state}'", nameof(state));
-        }
-
-        private void Validate()
-        {
-            foreach (var transition in Transitions)
-            {
-                if (transition.Source.HasValue && !KnowsState(transition.Source.Value))
-                    throw new Exception($"Trigger '{transition.Trigger}' references unknown source state '{transition.Source}'");
-
-                if (!KnowsState(transition.Destination))
-                    throw new Exception($"Trigger '{transition.Trigger}' references unknown target state '{transition.Destination}'");
-            }
-        }
-
-        private Task OnEnterAsync(StateRepresentation<TTrigger, TState> representation,
-                                   Func<ICallback, bool> predicate,
-                                   object parameter = null,
-                                   Action<IList<ICallback>> guard = null)
-        {
-            var callbacks = _filter.Filter(representation.OnEntryCallbacks, predicate, guard);
+            var callbacks = _filter.Filter(configuration.OnEntryCallbacks, predicate, guard);
 
             return _executor.ExecuteAsync(callbacks, parameter);
         }
 
-        private Task OnExitAsync(StateRepresentation<TTrigger, TState> representation,
-                                  Func<ICallback, bool> predicate,
-                                  object parameter = null,
-                                  Action<IList<ICallback>> guard = null)
+        private Task OnExitAsync(StateConfiguration<TTrigger, TState> configuration,
+                                 Func<ICallback, bool> predicate,
+                                 object parameter = null,
+                                 Action<IReadOnlyCollection<ICallback>> guard = null)
         {
-            var callbacks = _filter.Filter(representation.OnExitCallbacks, predicate, guard);
+            var callbacks = _filter.Filter(configuration.OnExitCallbacks, predicate, guard);
 
             return _executor.ExecuteAsync(callbacks, parameter);
         }
@@ -330,7 +283,7 @@ namespace AsyncStateMachine
         private static bool PredicateWithParam<TParam>(ICallback callback)
             => callback is FuncWithParamCallback<TParam> || callback is ActionWithParamCallback<TParam>;
 
-        private static void MinCallbacksGuard(IList<ICallback> callbacks)
+        private static void MinCallbacksGuard(IReadOnlyCollection<ICallback> callbacks)
         {
             if (callbacks == null || callbacks.Count < 1)
                 throw new ArgumentException("No matching callback with parameter was found");

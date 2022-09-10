@@ -1,0 +1,6 @@
+﻿graph TD
+    Open -->|assign| Assigned
+    Assigned -->|assign| Assigned
+    Assigned -->|close| Closed
+    Assigned -->|defer| Deferred
+    Deferred -->|assign| Assigned
