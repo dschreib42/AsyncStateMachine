@@ -1,6 +1,7 @@
 ﻿using AsyncStateMachine.Contracts;
 using AsyncStateMachine.Graphs.Formatters;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -58,9 +59,9 @@ namespace AsyncStateMachine.Graphs
                 }
             }
 
-            var sourceNodes = configuration.Transitions.Select(x => x.Source).Distinct();
-            var destNodes = configuration.Transitions.Select(x => x.Destination).Distinct();
-            
+            var sourceNodes = new HashSet<TState>(configuration.Transitions.Where(x => x.Source.HasValue).Select(x => x.Source.Value));
+            var destNodes = new HashSet<TState>(configuration.Transitions.Select(x => x.Destination));
+
             foreach (var endNode in destNodes.Where(x => !sourceNodes.Contains(x)))
             {
                 sb.AppendLine($"{indentation}\"{endNode}\" [peripheries=2];");
