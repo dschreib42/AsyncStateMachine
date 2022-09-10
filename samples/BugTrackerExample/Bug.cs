@@ -57,7 +57,7 @@ namespace BugTrackerExample
                 .OnEntry(() => Console.WriteLine("Bug is closed"));
 
             // Dump graph
-            Console.WriteLine(DotGraph.Format(_configuration, FormattingOptions.CamelCaseFormatting));
+            //Console.WriteLine(DotGraph.Format(_configuration, FormattingOptions.CamelCaseFormatting));
 
             // Instantiate a new state machine in the Open state
             _machine = new StateMachine<Trigger, State>(_configuration);
