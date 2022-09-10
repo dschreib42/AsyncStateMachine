@@ -45,7 +45,7 @@ namespace AsyncStateMachine.Contracts
         /// Validates if the specified trigger can be fired.
         /// </summary>
         /// <param name="trigger">The trigger to validate.</param>
-        /// <returns>True, if the trigger can be fired, false otherwise.</returns>
+        /// <returns><c>True</c>, if the trigger can be fired, otherwise <c>False</c>.</returns>
         Task<bool> CanFireAsync(TTrigger trigger);
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace AsyncStateMachine.Contracts
         /// <summary>
         /// Resets the state machine to the initial state.
         /// </summary>
-        /// <returns>A task that completes, when the state machine has been reset..</returns>
+        /// <returns>A task that completes, when the state machine has been reseted.</returns>
         Task ResetAsync();
     }
 }
