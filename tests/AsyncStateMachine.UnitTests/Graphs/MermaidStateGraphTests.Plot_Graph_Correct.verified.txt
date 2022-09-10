@@ -1,0 +1,7 @@
+﻿stateDiagram-v2
+    [*] --> Open
+    Open --> Assigned
+    Assigned --> Assigned
+    Assigned --> Closed
+    Assigned --> Deferred
+    Deferred --> Assigned
