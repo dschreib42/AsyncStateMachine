@@ -164,28 +164,37 @@ Therefore AsyncStateMachine supports different graph engines like: Graphviz and 
 #### Graphviz
 
 ```csharp
-string graph = DotGraph.Format(config);
+string graph = DotGraph.Format(config, FormattingOptions.CamelCaseFormatting);
 ```
 
 The `DotGraph.Format()` method returns a string representation of the state machine in the [DOT graph language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).
 
 This can then be rendered by tools that support the DOT graph language, such as the [dot command line tool](http://www.graphviz.org/doc/info/command.html) from [graphviz.org](http://www.graphviz.org) or use http://www.webgraphviz.com for instant viewing.
 
+The rendered bug StateMachine looks like this:
+![Bug lifecycle](assets/dotgraph_bug.png =500x)
+
 #### Mermaid
 
 ```csharp
 string graph = MermaidStateGraph.Format(config);
 ```
+The rendered mermaid state graph looks like this:
+![Bug State Graph](assets/mermaid_state_bug.png =300x)
 
 or 
 
 ```csharp
 string graph = MermaidFlowChartGraph.Format(config);
 ```
+The rendered mermaid flow graph looks like this:
+![Bug Flow Graph](assets/mermaid_flow_bug.png =300x)
 
 The `Mermaid*Graph.Format()` methods return a string representation of the state machine in the [Mermaid graph language](https://mermaid-js.github.io)).
 
 This string representation can then be rendered by tools that support the mermaid graph language, such as Azure DevOPS or https://mermaid.live for instant viewing.
+
+
 
 ## Building
 
