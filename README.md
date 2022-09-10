@@ -172,7 +172,7 @@ The `DotGraph.Format()` method returns a string representation of the state mach
 This can then be rendered by tools that support the DOT graph language, such as the [dot command line tool](http://www.graphviz.org/doc/info/command.html) from [graphviz.org](http://www.graphviz.org) or use http://www.webgraphviz.com for instant viewing.
 
 The rendered bug StateMachine looks like this:
-![Bug lifecycle](assets/dotgraph_bug.png =500x)
+![](assets/dotgraph_bug.png =500x)
 
 #### Mermaid
 
@@ -180,7 +180,7 @@ The rendered bug StateMachine looks like this:
 string graph = MermaidStateGraph.Format(config);
 ```
 The rendered mermaid state graph looks like this:
-![Bug State Graph](assets/mermaid_state_bug.png =300x)
+![](assets/mermaid_state_bug.png =300x)
 
 or 
 
@@ -188,7 +188,7 @@ or
 string graph = MermaidFlowChartGraph.Format(config);
 ```
 The rendered mermaid flow graph looks like this:
-![Bug Flow Graph](assets/mermaid_flow_bug.png =300x)
+![](assets/mermaid_flow_bug.png =300x)
 
 The `Mermaid*Graph.Format()` methods return a string representation of the state machine in the [Mermaid graph language](https://mermaid-js.github.io)).
 
