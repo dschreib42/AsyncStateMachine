@@ -116,6 +116,36 @@ namespace AsyncStateMachine.UnitTests
         }
 
         [Fact]
+        public async Task CanFireAsync_InvalidTrigger_False()
+        {
+            // Arrange
+            _config.Configure(State.A)
+                .PermitReentry(Trigger.a);
+            await _sm.InitializeAsync();
+
+            // Act
+            var result = await _sm.CanFireAsync(Trigger.b);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task CanFireAsync_ValidTrigger_True()
+        {
+            // Arrange
+            _config.Configure(State.A)
+                .PermitReentry(Trigger.a);
+            await _sm.InitializeAsync();
+
+            // Act
+            var result = await _sm.CanFireAsync(Trigger.a);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
         public Task FireAsync_InvalidTrigger_Throws()
         {
             // Arrange
@@ -188,43 +218,13 @@ namespace AsyncStateMachine.UnitTests
         }
 
         [Fact]
-        public async Task FireAsync_Uninitialized_Throws()
+        public Task FireAsync_Uninitialized_Throws()
         {
             // Arrange
             var sm = new StateMachine<Trigger, State>(_config);
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => sm.FireAsync(Trigger.a));
-        }
-
-        [Fact]
-        public async Task CanFireAsync_InvalidTrigger_False()
-        {
-            // Arrange
-            _config.Configure(State.A)
-                .PermitReentry(Trigger.a);
-            await _sm.InitializeAsync();
-
-            // Act
-            var result = await _sm.CanFireAsync(Trigger.b);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public async Task CanFireAsync_ValidTrigger_True()
-        {
-            // Arrange
-            _config.Configure(State.A)
-                .PermitReentry(Trigger.a);
-            await _sm.InitializeAsync();
-
-            // Act
-            var result = await _sm.CanFireAsync(Trigger.a);
-
-            // Assert
-            Assert.True(result);
+            return Assert.ThrowsAsync<InvalidOperationException>(() => sm.FireAsync(Trigger.a));
         }
 
         [Fact]

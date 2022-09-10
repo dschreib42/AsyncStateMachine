@@ -87,7 +87,7 @@ namespace AsyncStateMachine
 
             using (await _asyncLock.LockAsync())
             {
-                var targetState = state.HasValue ? state.Value : _configuration.InitialState;
+                var targetState = state ?? _configuration.InitialState;
                 var configuration = _configuration.GetStateConfiguration(targetState);
 
                 _currentState = targetState;
@@ -100,7 +100,19 @@ namespace AsyncStateMachine
         }
 
         /// <inheritdoc/>
-        public Task ResetAsync() => InitializeAsync();
+        public async Task ResetAsync()
+        {
+            using (await _asyncLock.LockAsync())
+            {
+                if (_currentState.HasValue)
+                {
+                    // call exit action for current state
+                    await OnExitAsync(_configuration.GetStateConfiguration(_currentState.Value), PredicateWithoutParam);
+                }
+            }
+
+            await InitializeAsync();
+        }
 
         /// <inheritdoc/>
         public async Task<bool> InStateAsync(TState state, ushort maxDepth = 5)
@@ -223,7 +235,7 @@ namespace AsyncStateMachine
                                                      TTrigger trigger,
                                                      Func<ICallback, bool> predicate,
                                                      object parameter = null,
-                                                     Action<IList<ICallback>> guard = null)
+                                                     Action<IReadOnlyCollection<ICallback>> guard = null)
         {
             var configuration = _configuration.GetStateConfiguration(previous);
 
@@ -252,7 +264,7 @@ namespace AsyncStateMachine
         private Task OnEnterAsync(StateConfiguration<TTrigger, TState> configuration,
                                   Func<ICallback, bool> predicate,
                                   object parameter = null,
-                                  Action<IList<ICallback>> guard = null)
+                                  Action<IReadOnlyCollection<ICallback>> guard = null)
         {
             var callbacks = _filter.Filter(configuration.OnEntryCallbacks, predicate, guard);
 
@@ -262,7 +274,7 @@ namespace AsyncStateMachine
         private Task OnExitAsync(StateConfiguration<TTrigger, TState> configuration,
                                  Func<ICallback, bool> predicate,
                                  object parameter = null,
-                                 Action<IList<ICallback>> guard = null)
+                                 Action<IReadOnlyCollection<ICallback>> guard = null)
         {
             var callbacks = _filter.Filter(configuration.OnExitCallbacks, predicate, guard);
 
@@ -275,7 +287,7 @@ namespace AsyncStateMachine
         private static bool PredicateWithParam<TParam>(ICallback callback)
             => callback is FuncWithParamCallback<TParam> || callback is ActionWithParamCallback<TParam>;
 
-        private static void MinCallbacksGuard(IList<ICallback> callbacks)
+        private static void MinCallbacksGuard(IReadOnlyCollection<ICallback> callbacks)
         {
             if (callbacks == null || callbacks.Count < 1)
                 throw new ArgumentException("No matching callback with parameter was found");

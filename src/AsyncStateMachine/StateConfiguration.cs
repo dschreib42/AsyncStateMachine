@@ -198,12 +198,12 @@ namespace AsyncStateMachine
         /// <summary>
         /// Provides all callbacks to be executed on state entry.
         /// </summary>
-        internal IEnumerable<ICallback> OnEntryCallbacks => _onEntry.ToList().AsReadOnly();
+        internal IReadOnlyCollection<ICallback> OnEntryCallbacks => _onEntry.ToList().AsReadOnly();
 
         /// <summary>
         /// Provides all callbacks to be executed on state exit.
         /// </summary>
-        internal IEnumerable<ICallback> OnExitCallbacks => _onExit.ToList().AsReadOnly();
+        internal IReadOnlyCollection<ICallback> OnExitCallbacks => _onExit.ToList().AsReadOnly();
 
         #endregion
 

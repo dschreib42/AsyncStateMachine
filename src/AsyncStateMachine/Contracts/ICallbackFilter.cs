@@ -16,8 +16,8 @@ namespace AsyncStateMachine.Contracts
         /// <param name="predicate">Predicate filtering the available callbacks.</param>
         /// <param name="guard">The guard function to validate the callbacks to be executed.</param>
         /// <returns>A list of callbacks to be executed.</returns>
-        IEnumerable<ICallback> Filter(IEnumerable<ICallback> available,
-                                      Func<ICallback, bool> predicate,
-                                      Action<IList<ICallback>> guard = null);
+        IReadOnlyCollection<ICallback> Filter(IReadOnlyCollection<ICallback> available,
+                                              Func<ICallback, bool> predicate,
+                                              Action<IReadOnlyCollection<ICallback>> guard = null);
     }
 }

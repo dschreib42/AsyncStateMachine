@@ -480,5 +480,24 @@ namespace AsyncStateMachine.ComponentTests
             // Assert
             Assert.Equal(new[] { "<A", "A>", "<B", "B>", "<C" }, visited);
         }
+
+        [Fact]
+        public async Task ResetAsync_OnExit_Called()
+        {
+            // Arrange
+            var calls = 0;
+            _config.Configure(State.A)
+                .Permit(Trigger.b, State.B);
+            _config.Configure(State.B)
+                .OnExit(() => calls++);
+            await _sm.InitializeAsync();
+            await _sm.FireAsync(Trigger.b);
+
+            // Act
+            await _sm.ResetAsync();
+
+            // Assert
+            Assert.Equal(1, calls);
+        }
     }
 }

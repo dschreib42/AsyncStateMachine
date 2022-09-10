@@ -6,7 +6,7 @@ namespace AsyncStateMachine.Callbacks
     /// <summary>
     /// Implementation of a <see cref="ICallback"/> for async functions with a single argument.
     /// </summary>
-    internal class FuncWithParamCallback<TParam> : ICallback
+    internal sealed class FuncWithParamCallback<TParam> : ICallback
     {
         private readonly Func<TParam, Task> _callback;
 
