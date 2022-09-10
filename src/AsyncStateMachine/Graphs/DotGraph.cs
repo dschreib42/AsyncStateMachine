@@ -64,8 +64,10 @@ namespace AsyncStateMachine.Graphs
 
             foreach (var endNode in destNodes.Where(x => !sourceNodes.Contains(x)))
             {
-                sb.AppendLine($"{indentation}\"{endNode}\" [peripheries=2];");
+                sb.AppendLine($"{indentation}\"{endNode}\" [peripheries = 2];");
             }
+
+            sb.AppendLine("}");
 
             return sb.ToString();
         }
