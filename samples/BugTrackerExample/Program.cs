@@ -6,6 +6,7 @@
         {
             var bug = new Bug("Incorrect stock count");
 
+            await bug.InitializeAsync();
             await bug.AssignAsync("Joe");
             await bug.DeferAsync();
             await bug.AssignAsync("Harry");
