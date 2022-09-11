@@ -8,18 +8,18 @@ using System.Text;
 namespace AsyncStateMachine.Graphs
 {
     /// <summary>
-    /// Plots a <see href="http://www.graphviz.org/">Graphviz</see> compliant graph.
+    /// Generates a <see href="http://www.graphviz.org/">Graphviz</see> compliant graph.
     /// </summary>
     public static class DotGraph
     {
         /// <summary>
         /// Plots a mermaid state graph.
         /// </summary>
-        /// <param name="configuration">An instance of a <see cref="StateConfiguration{TTrigger, TState}"/>.</param>
-        /// <returns>A mermaid graph.</returns>
         /// <typeparam name="TState">The type of state.</typeparam>
         /// <typeparam name="TTrigger">The type of trigger.</typeparam>
-        /// <param name="options">Graph generating options.</param>
+        /// <param name="configuration">An instance of a <see cref="StateConfiguration{TTrigger, TState}"/>.</param>
+        /// <returns>A mermaid graph.</returns>
+        /// <param name="options">Graph generating options. All options are enabled by default.</param>
         public static string Format<TState, TTrigger>(StateMachineConfiguration<TTrigger, TState> configuration,
                                                       GraphOptions options = GraphOptions.None)
             where TState : struct
@@ -105,6 +105,6 @@ namespace AsyncStateMachine.Graphs
         /// <summary>
         /// All options before.
         /// </summary>
-        All = 0xff,
+        All = 0xffff,
     }
 }
