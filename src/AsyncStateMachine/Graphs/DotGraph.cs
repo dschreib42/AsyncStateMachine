@@ -21,7 +21,7 @@ namespace AsyncStateMachine.Graphs
         /// <returns>A mermaid graph.</returns>
         /// <param name="options">Graph generating options. All options are enabled by default.</param>
         public static string Format<TState, TTrigger>(StateMachineConfiguration<TTrigger, TState> configuration,
-                                                      GraphOptions options = GraphOptions.None)
+                                                      GraphOptions options = GraphOptions.All)
             where TState : struct
             where TTrigger : struct
         {
