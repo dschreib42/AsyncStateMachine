@@ -164,7 +164,7 @@ Therefore AsyncStateMachine supports different graph engines like: Graphviz and 
 #### Graphviz
 
 ```csharp
-string graph = DotGraph.Format(config, FormattingOptions.CamelCaseFormatting);
+string graph = DotGraph.Format(config, GraphOptions.All);
 ```
 
 The `DotGraph.Format()` method returns a string representation of the state machine in the [DOT graph language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)).
