@@ -5,7 +5,7 @@ using Xunit;
 
 namespace AsyncStateMachine.ComponentTests
 {
-    public class StateMachineTests
+    public sealed class StateMachineTests : IDisposable
     {
         private readonly StateMachineConfiguration<Trigger, State> _config;
         private readonly StateMachine<Trigger, State> _sm;
@@ -31,6 +31,12 @@ namespace AsyncStateMachine.ComponentTests
         {
             _config = new StateMachineConfiguration<Trigger, State>(State.A);
             _sm = new StateMachine<Trigger, State>(_config);
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _sm.Dispose();
         }
 
         [Fact]

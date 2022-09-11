@@ -3,7 +3,6 @@ using AsyncStateMachine.Contracts;
 using NeoSmart.AsyncLock;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
@@ -27,6 +26,7 @@ namespace AsyncStateMachine
         private readonly AsyncLock _asyncLock;
 
         private TState? _currentState;
+        private bool _disposed;
 
         #endregion
 
@@ -201,19 +201,7 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public void Dispose()
         {
-            var disposables = new object[]
-            {
-                _subject,
-                _asyncLock
-            };
-
-            foreach (var disposable in disposables
-                .Where(x => x is IDisposable)
-                .Cast<IDisposable>())
-            {
-                disposable.Dispose();
-            }
-
+            InternalDispose();
             GC.SuppressFinalize(this);
         }
 
@@ -287,6 +275,32 @@ namespace AsyncStateMachine
         {
             if (callbacks == null || callbacks.Count < 1)
                 throw new ArgumentException("No matching callback with parameter was found");
+        }
+
+        private void InternalDispose()
+        {
+            if (_disposed)
+                return;
+
+            if (_currentState.HasValue)
+            {
+                try
+                {
+                    // call exit action for current state
+                    OnExitAsync(_configuration.GetStateConfiguration(_currentState.Value), PredicateWithoutParam).Wait();
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+
+            if (_subject is IDisposable x)
+            {
+                x.Dispose();
+            }
+
+            _disposed = true;
         }
 
         #endregion
