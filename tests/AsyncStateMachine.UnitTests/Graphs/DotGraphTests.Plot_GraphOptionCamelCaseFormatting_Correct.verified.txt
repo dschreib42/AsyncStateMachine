@@ -1,0 +1,10 @@
+﻿digraph G {
+    rankdir = LR;
+    size = "8,5";
+    "New Bug" -> "Assigned" [label = "assign"];
+    "New Bug" -> "Rejected" [label = "reject"];
+    "Assigned" -> "Assigned" [label = "assign"];
+    "Assigned" -> "Closed" [label = "close"];
+    "Assigned" -> "Deferred" [label = "defer"];
+    "Deferred" -> "Assigned" [label = "assign"];
+}

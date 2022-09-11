@@ -19,9 +19,9 @@ namespace AsyncStateMachine.Graphs
         /// <returns>A mermaid graph.</returns>
         /// <typeparam name="TState">The type of state.</typeparam>
         /// <typeparam name="TTrigger">The type of trigger.</typeparam>
-        /// <param name="options">Formatting options.</param>
+        /// <param name="options">Graph generating options.</param>
         public static string Format<TState, TTrigger>(StateMachineConfiguration<TTrigger, TState> configuration,
-                                                      FormattingOptions options = FormattingOptions.None)
+                                                      GraphOptions options = GraphOptions.None)
             where TState : struct
             where TTrigger : struct
         {
@@ -31,7 +31,7 @@ namespace AsyncStateMachine.Graphs
             var indentation = new string(' ', 4);
             var startNode = "START";
 
-            var formatter = options.HasFlag(FormattingOptions.CamelCaseFormatting)
+            var formatter = options.HasFlag(GraphOptions.CamelCaseFormatting)
                 ? (INameFormatter)new CamelCaseNameFormatter()
                 : (INameFormatter)new TransparentNameFormatter();
 
@@ -43,11 +43,14 @@ namespace AsyncStateMachine.Graphs
             {
                 if (transition.Source is null)
                 {
-                    var source = startNode;
-                    var destination = formatter.FormatName(transition.Destination.ToString());
+                    if (options.HasFlag(GraphOptions.CreateStartTransition))
+                    {
+                        var source = startNode;
+                        var destination = formatter.FormatName(transition.Destination.ToString());
 
-                    sb.AppendLine($"{indentation}\"{source}\" [shape = point];");
-                    sb.AppendLine($"{indentation}\"{source}\" -> \"{destination}\";");
+                        sb.AppendLine($"{indentation}\"{source}\" [shape = point];");
+                        sb.AppendLine($"{indentation}\"{source}\" -> \"{destination}\";");
+                    }
                 }
                 else
                 {
@@ -59,12 +62,15 @@ namespace AsyncStateMachine.Graphs
                 }
             }
 
-            var sourceNodes = new HashSet<TState>(configuration.Transitions.Where(x => x.Source.HasValue).Select(x => x.Source.Value));
-            var destNodes = new HashSet<TState>(configuration.Transitions.Select(x => x.Destination));
-
-            foreach (var endNode in destNodes.Where(x => !sourceNodes.Contains(x)))
+            if (options.HasFlag(GraphOptions.MarkTerminationNodes))
             {
-                sb.AppendLine($"{indentation}\"{endNode}\" [peripheries = 2];");
+                var sourceNodes = new HashSet<TState>(configuration.Transitions.Where(x => x.Source.HasValue).Select(x => x.Source.Value));
+                var destNodes = new HashSet<TState>(configuration.Transitions.Select(x => x.Destination));
+
+                foreach (var endNode in destNodes.Where(x => !sourceNodes.Contains(x)))
+                {
+                    sb.AppendLine($"{indentation}\"{endNode}\" [peripheries = 2];");
+                }
             }
 
             sb.AppendLine("}");
@@ -74,10 +80,10 @@ namespace AsyncStateMachine.Graphs
     }
 
     [Flags]
-    public enum FormattingOptions
+    public enum GraphOptions
     {
         /// <summary>
-        /// No fancy formatting applied.
+        /// No options selected.
         /// </summary>
         None = 0,
 
@@ -85,5 +91,15 @@ namespace AsyncStateMachine.Graphs
         /// CamelCase to word formatting applied.
         /// </summary>
         CamelCaseFormatting = 1,
+
+        /// <summary>
+        /// Creates a transition to the start node.
+        /// </summary>
+        CreateStartTransition = 2,
+
+        /// <summary>
+        /// Marks termination nodes.
+        /// </summary>
+        MarkTerminationNodes = 4,
     }
 }

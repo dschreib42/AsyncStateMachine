@@ -1,0 +1,12 @@
+﻿digraph G {
+    rankdir = LR;
+    size = "8,5";
+    "START" [shape = point];
+    "START" -> "NewBug";
+    "NewBug" -> "Assigned" [label = "assign"];
+    "NewBug" -> "Rejected" [label = "reject"];
+    "Assigned" -> "Assigned" [label = "assign"];
+    "Assigned" -> "Closed" [label = "close"];
+    "Assigned" -> "Deferred" [label = "defer"];
+    "Deferred" -> "Assigned" [label = "assign"];
+}
