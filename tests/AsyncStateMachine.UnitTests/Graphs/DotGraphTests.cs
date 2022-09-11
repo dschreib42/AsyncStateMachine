@@ -49,14 +49,14 @@ namespace AsyncStateMachine.UnitTests.Graphs
         }
 
         [Fact]
-        public void Plot_NullConfiguration_Throws()
+        public void Format_NullConfiguration_Throws()
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => DotGraph.Format<Trigger, State>(null));
         }
 
         [Fact]
-        public Task Plot_GraphOptionNone_Correct()
+        public Task Format_GraphOptionNone_Correct()
         {
             // Arrange
             var options = GraphOptions.CreateStartTransition | GraphOptions.MarkTerminationNodes;
@@ -69,7 +69,7 @@ namespace AsyncStateMachine.UnitTests.Graphs
         }
 
         [Fact]
-        public Task Plot_GraphOptionCreateStartTransistions_Correct()
+        public Task Format_GraphOptionCreateStartTransistions_Correct()
         {
             // Arrange
             var options = GraphOptions.CreateStartTransition;
@@ -82,7 +82,7 @@ namespace AsyncStateMachine.UnitTests.Graphs
         }
 
         [Fact]
-        public Task Plot_GraphOptionMarkTerminationNodes_Correct()
+        public Task Format_GraphOptionMarkTerminationNodes_Correct()
         {
             // Arrange
             var options = GraphOptions.MarkTerminationNodes;
@@ -95,7 +95,7 @@ namespace AsyncStateMachine.UnitTests.Graphs
         }
 
         [Fact]
-        public Task Plot_GraphOptionCamelCaseFormatting_Correct()
+        public Task Format_GraphOptionCamelCaseFormatting_Correct()
         {
             // Arrange
             var options = GraphOptions.CamelCaseFormatting;
@@ -108,10 +108,10 @@ namespace AsyncStateMachine.UnitTests.Graphs
         }
 
         [Fact]
-        public Task Plot_GraphOptionAllOptions_Correct()
+        public Task Format_GraphOptionAll_Correct()
         {
             // Arrange
-            var options = (GraphOptions)0xff;
+            var options = GraphOptions.All;
 
             // Act
             var result = DotGraph.Format(_configuration, options);

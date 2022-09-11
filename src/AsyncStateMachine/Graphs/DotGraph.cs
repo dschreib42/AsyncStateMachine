@@ -83,7 +83,7 @@ namespace AsyncStateMachine.Graphs
     public enum GraphOptions
     {
         /// <summary>
-        /// No options selected.
+        /// Nothing.
         /// </summary>
         None = 0,
 
@@ -101,5 +101,10 @@ namespace AsyncStateMachine.Graphs
         /// Marks termination nodes.
         /// </summary>
         MarkTerminationNodes = 4,
+
+        /// <summary>
+        /// All options before.
+        /// </summary>
+        All = 0xff,
     }
 }
