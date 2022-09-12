@@ -95,7 +95,7 @@ namespace AsyncStateMachine
                 await OnEnterAsync(configuration, PredicateWithoutParam);
 
                 // publish state changed
-                _subject.OnNext(new Transition<TTrigger, TState>(null, null, _configuration.InitialState));
+                _subject.OnNext(new Transition<TTrigger, TState>(null, null, targetState));
             }
         }
 
