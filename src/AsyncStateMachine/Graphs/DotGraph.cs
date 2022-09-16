@@ -18,10 +18,10 @@ namespace AsyncStateMachine.Graphs
         /// <typeparam name="TState">The type of state.</typeparam>
         /// <typeparam name="TTrigger">The type of trigger.</typeparam>
         /// <param name="configuration">An instance of a <see cref="StateConfiguration{TTrigger, TState}"/>.</param>
+        /// <param name="options">Graph generating options.</param>
         /// <returns>A mermaid graph.</returns>
-        /// <param name="options">Graph generating options. All options are enabled by default.</param>
         public static string Format<TState, TTrigger>(StateMachineConfiguration<TTrigger, TState> configuration,
-                                                      GraphOptions options = GraphOptions.All)
+                                                      GraphOptions options = GraphOptions.Default)
             where TState : struct
             where TTrigger : struct
         {
@@ -103,8 +103,8 @@ namespace AsyncStateMachine.Graphs
         MarkTerminationNodes = 4,
 
         /// <summary>
-        /// All options before.
+        /// By default all options are enabled.
         /// </summary>
-        All = 0xffff,
+        Default = CamelCaseFormatting | CreateStartTransition | MarkTerminationNodes,
     }
 }

@@ -108,10 +108,10 @@ namespace AsyncStateMachine.UnitTests.Graphs
         }
 
         [Fact]
-        public Task Format_GraphOptionAll_Correct()
+        public Task Format_GraphOptionDefault_Correct()
         {
             // Arrange
-            var options = GraphOptions.All;
+            var options = GraphOptions.Default;
 
             // Act
             var result = DotGraph.Format(_configuration, options);
