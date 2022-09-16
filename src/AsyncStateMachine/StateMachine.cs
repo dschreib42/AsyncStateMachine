@@ -92,10 +92,11 @@ namespace AsyncStateMachine
 
                 _currentState = targetState;
 
-                await OnEnterAsync(configuration, PredicateWithoutParam);
-
                 // publish state changed
                 _subject.OnNext(new Transition<TTrigger, TState>(null, null, targetState));
+
+                // call entry action for current state
+                await OnEnterAsync(configuration, PredicateWithoutParam);
             }
         }
 
