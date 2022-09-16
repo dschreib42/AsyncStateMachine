@@ -532,5 +532,19 @@ namespace AsyncStateMachine.UnitTests
             // Assert
             Assert.Null(exception);
         }
+
+        [Fact]
+        public void Dispose_MultipleTimes_DoesNotThrow()
+        {
+            // Arrange
+            for (var i = 0; i < 5; i++)
+            {
+                // Act
+                var exception = Record.Exception(() => _sm.Dispose());
+
+                // Assert
+                Assert.Null(exception);
+            }
+        }
     }
 }

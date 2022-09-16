@@ -45,14 +45,14 @@ namespace AsyncStateMachine.UnitTests.Graphs
         }
 
         [Fact]
-        public void Plot_NullConfiguration_Throws()
+        public void Format_NullConfiguration_Throws()
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => MermaidStateGraph.Format<Trigger, State>(null));
         }
 
         [Fact]
-        public Task Plot_Graph_Correct()
+        public Task Format_Graph_Correct()
         {
             // Act
             var result = MermaidStateGraph.Format(_configuration);

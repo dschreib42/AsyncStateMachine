@@ -3,7 +3,6 @@ using AsyncStateMachine.Contracts;
 using NeoSmart.AsyncLock;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
@@ -27,6 +26,7 @@ namespace AsyncStateMachine
         private readonly AsyncLock _asyncLock;
 
         private TState? _currentState;
+        private bool _disposed;
 
         #endregion
 
@@ -92,10 +92,11 @@ namespace AsyncStateMachine
 
                 _currentState = targetState;
 
-                await OnEnterAsync(configuration, PredicateWithoutParam);
-
                 // publish state changed
-                _subject.OnNext(new Transition<TTrigger, TState>(null, null, _configuration.InitialState));
+                _subject.OnNext(new Transition<TTrigger, TState>(null, null, targetState));
+
+                // call entry action for current state
+                await OnEnterAsync(configuration, PredicateWithoutParam);
             }
         }
 
@@ -201,18 +202,15 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public void Dispose()
         {
-            var disposables = new object[]
-            {
-                _subject,
-                _asyncLock
-            };
+            if (_disposed)
+                return;
 
-            foreach (var disposable in disposables
-                .Where(x => x is IDisposable)
-                .Cast<IDisposable>())
+            if (_subject is IDisposable x)
             {
-                disposable.Dispose();
+                x.Dispose();
             }
+
+            _disposed = true;
 
             GC.SuppressFinalize(this);
         }

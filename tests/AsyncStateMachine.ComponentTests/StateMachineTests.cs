@@ -5,7 +5,7 @@ using Xunit;
 
 namespace AsyncStateMachine.ComponentTests
 {
-    public class StateMachineTests
+    public sealed class StateMachineTests : IDisposable
     {
         private readonly StateMachineConfiguration<Trigger, State> _config;
         private readonly StateMachine<Trigger, State> _sm;
@@ -31,6 +31,58 @@ namespace AsyncStateMachine.ComponentTests
         {
             _config = new StateMachineConfiguration<Trigger, State>(State.A);
             _sm = new StateMachine<Trigger, State>(_config);
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _sm.Dispose();
+        }
+
+        [Theory]
+        [InlineData("A")]
+        [InlineData("B")]
+        [InlineData("C")]
+        [InlineData(null)]
+        public async Task InitializeAsync_ReportedTransition_AsDefined(string state)
+        {
+            // Arrange
+            Transition<Trigger, State> transition = null;
+            _config.Configure(State.A);
+            _config.Configure(State.B);
+            _config.Configure(State.C);
+            using var _ = _sm.Observable.Subscribe(t => transition = t);
+
+            State expectedState = state switch
+            {
+                "A" => State.A,
+                "B" => State.B,
+                "C" => State.C,
+                _ => _config.InitialState,
+            };
+
+            // Act
+            await _sm.InitializeAsync(expectedState);
+
+            // Assert
+            Assert.Equal(expectedState, transition.Destination);
+        }
+
+        [Fact]
+        public async Task InitializeAsync_ReportedTransition_DefaultState()
+        {
+            // Arrange
+            Transition<Trigger, State> transition = null;
+            _config.Configure(State.A);
+            _config.Configure(State.B);
+            _config.Configure(State.C);
+            using var _ = _sm.Observable.Subscribe(t => transition = t);
+
+            // Act
+            await _sm.InitializeAsync();
+
+            // Assert
+            Assert.Equal(_config.InitialState, transition.Destination);
         }
 
         [Fact]
