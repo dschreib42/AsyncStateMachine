@@ -202,7 +202,16 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public void Dispose()
         {
-            InternalDispose();
+            if (_disposed)
+                return;
+
+            if (_subject is IDisposable x)
+            {
+                x.Dispose();
+            }
+
+            _disposed = true;
+
             GC.SuppressFinalize(this);
         }
 
@@ -276,32 +285,6 @@ namespace AsyncStateMachine
         {
             if (callbacks == null || callbacks.Count < 1)
                 throw new ArgumentException("No matching callback with parameter was found");
-        }
-
-        private void InternalDispose()
-        {
-            if (_disposed)
-                return;
-
-            if (_currentState.HasValue)
-            {
-                try
-                {
-                    // call exit action for current state
-                    OnExitAsync(_configuration.GetStateConfiguration(_currentState.Value), PredicateWithoutParam).Wait();
-                }
-                catch
-                {
-                    // ignore
-                }
-            }
-
-            if (_subject is IDisposable x)
-            {
-                x.Dispose();
-            }
-
-            _disposed = true;
         }
 
         #endregion
