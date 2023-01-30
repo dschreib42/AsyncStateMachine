@@ -196,7 +196,7 @@ This string representation can then be rendered by tools that support the mermai
 
 ## Building
 
-AsyncStateMachine runs on .NET and .NetCore platforms targeting .NET Standard 2.0 and .NET Standard2.1. Visual Studio 2022 or later is required to build the solution, because .NET 6.0 is the default.
+AsyncStateMachine runs on .NET NetCore platforms targeting .NET 6.0 or 7.0. Visual Studio 2022 or later is required to build the solution, because .NET 7.0 is the default.
 
 ## Project Goals
 
