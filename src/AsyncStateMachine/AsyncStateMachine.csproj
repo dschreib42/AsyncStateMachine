@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;netstandard2.0</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <RootNamespace>AsyncStateMachine</RootNamespace>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -15,7 +15,7 @@
     <Copyright>Copyright 2021 Dirk Schreiber</Copyright>
     <Authors>Dirk Schreiber</Authors>
     <Description>A lightweight state machine framework for .Net/.NetCore</Description>
-    <VersionPrefix>1.3.1</VersionPrefix>
+    <VersionPrefix>1.3.2</VersionPrefix>
     <Tags>state machine async</Tags>
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <license>http://www.apache.org/licenses/LICENSE-2.0</license>
