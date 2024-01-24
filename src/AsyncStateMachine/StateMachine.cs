@@ -1,6 +1,6 @@
-﻿using AsyncStateMachine.Callbacks;
+﻿using AsyncKeyedLock;
+using AsyncStateMachine.Callbacks;
 using AsyncStateMachine.Contracts;
-using NeoSmart.AsyncLock;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
@@ -23,7 +23,7 @@ namespace AsyncStateMachine
         private readonly ICallbackFilter _filter;
         private readonly ICallbackExecutor _executor;
         private readonly StateMachineConfiguration<TTrigger, TState> _configuration;
-        private readonly AsyncLock _asyncLock;
+        private readonly AsyncNonKeyedLocker _asyncLock;
 
         private TState? _currentState;
         private bool _disposed;
@@ -60,7 +60,7 @@ namespace AsyncStateMachine
             _subject = subject ?? throw new ArgumentNullException(nameof(subject));
             _filter = filter ?? throw new ArgumentNullException(nameof(filter));
             _executor = executor ?? throw new ArgumentNullException(nameof(executor));
-            _asyncLock = new AsyncLock();
+            _asyncLock = new AsyncNonKeyedLocker();
         }
 
         #endregion
