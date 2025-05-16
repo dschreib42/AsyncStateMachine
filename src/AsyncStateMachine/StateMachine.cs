@@ -4,6 +4,7 @@ using NeoSmart.AsyncLock;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AsyncStateMachine
@@ -78,16 +79,20 @@ namespace AsyncStateMachine
         #region IStateMachine implementation
 
         /// <inheritdoc/>
-        public async Task InitializeAsync(TState? state = null)
+        public Task InitializeAsync(CancellationToken cancellationToken = default)
+            => InitializeAsync(_configuration.InitialState, cancellationToken);
+
+        /// <inheritdoc/>
+        public async Task InitializeAsync(TState state, CancellationToken cancellationToken = default)
         {
-            if (state.HasValue && !_configuration.HasState(state.Value))
+            if (!_configuration.HasState(state))
                 throw new ArgumentException("State not configured");
 
             _configuration.Validate();
 
-            using (await _asyncLock.LockAsync())
+            using (await _asyncLock.LockAsync(cancellationToken))
             {
-                var targetState = state ?? _configuration.InitialState;
+                var targetState = state;
                 var configuration = _configuration.GetStateConfiguration(targetState);
 
                 _currentState = targetState;
@@ -101,9 +106,9 @@ namespace AsyncStateMachine
         }
 
         /// <inheritdoc/>
-        public async Task ResetAsync()
+        public async Task ResetAsync(CancellationToken cancellationToken = default)
         {
-            using (await _asyncLock.LockAsync())
+            using (await _asyncLock.LockAsync(cancellationToken))
             {
                 if (_currentState.HasValue)
                 {
@@ -112,13 +117,17 @@ namespace AsyncStateMachine
                 }
             }
 
-            await InitializeAsync();
+            await InitializeAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
-        public async Task<bool> InStateAsync(TState state, ushort maxDepth = 5)
+        public Task<bool> InStateAsync(TState state, CancellationToken cancellationToken = default)
+            => InStateAsync(state, 5, cancellationToken);
+
+        /// <inheritdoc/>
+        public async Task<bool> InStateAsync(TState state, ushort maxDepth, CancellationToken cancellationToken = default)
         {
-            using (await _asyncLock.LockAsync())
+            using (await _asyncLock.LockAsync(cancellationToken))
             {
                 if (!_currentState.HasValue)
                     throw new InvalidOperationException("StateMachine not yet initialized");
@@ -148,11 +157,11 @@ namespace AsyncStateMachine
         }
 
         /// <inheritdoc/>
-        public async Task<bool> CanFireAsync(TTrigger trigger)
+        public async Task<bool> CanFireAsync(TTrigger trigger, CancellationToken cancellationToken = default)
         {
             try
             {
-                using (await _asyncLock.LockAsync())
+                using (await _asyncLock.LockAsync(cancellationToken))
                 {
                     if (!_currentState.HasValue || !_configuration.HasState(_currentState.Value))
                         return false;
@@ -169,9 +178,9 @@ namespace AsyncStateMachine
         }
 
         /// <inheritdoc/>
-        public async Task FireAsync(TTrigger trigger)
+        public async Task FireAsync(TTrigger trigger, CancellationToken cancellationToken = default)
         {
-            using (await _asyncLock.LockAsync())
+            using (await _asyncLock.LockAsync(cancellationToken))
             {
                 if (!_currentState.HasValue)
                     throw new InvalidOperationException("StateMachine not yet initialized");
@@ -181,9 +190,9 @@ namespace AsyncStateMachine
         }
 
         /// <inheritdoc/>
-        public async Task FireAsync<TParam>(TTrigger trigger, TParam parameter)
+        public async Task FireAsync<TParam>(TTrigger trigger, TParam parameter, CancellationToken cancellationToken = default)
         {
-            using (await _asyncLock.LockAsync())
+            using (await _asyncLock.LockAsync(cancellationToken))
             {
                 try
                 {
