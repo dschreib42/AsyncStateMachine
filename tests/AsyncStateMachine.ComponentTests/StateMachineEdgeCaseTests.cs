@@ -556,6 +556,75 @@ namespace AsyncStateMachine.ComponentTests
             Assert.Equal(count % 2 == 0 ? State.A : State.B, _sm.CurrentState);
         }
 
+        #endregion
+
+        #region Reentrancy
+
+        // The machine's lock must be reentrant: a callback running under the lock
+        // may call back into the same machine without deadlocking.
+
+        [Fact]
+        public async Task FireAsync_FromEntryCallback_DoesNotDeadlock()
+        {
+            // Arrange
+            _config.Configure(State.A)
+                .Permit(Trigger.a, State.B);
+            _config.Configure(State.B)
+                .Permit(Trigger.a, State.C)
+                .OnEntry(async () => await _sm.FireAsync(Trigger.a));
+            _config.Configure(State.C);
+            await _sm.InitializeAsync();
+
+            // Act
+            await _sm.FireAsync(Trigger.a).WaitAsync(Timeout);
+
+            // Assert
+            Assert.Equal(State.C, _sm.CurrentState);
+        }
+
+        [Fact]
+        public async Task FireAsync_FromExitCallback_DoesNotDeadlock()
+        {
+            // Arrange
+            var inState = false;
+            _config.Configure(State.A)
+                .Permit(Trigger.a, State.B)
+                .OnExit(async () => inState = await _sm.InStateAsync(State.A));
+            _config.Configure(State.B);
+            await _sm.InitializeAsync();
+
+            // Act
+            await _sm.FireAsync(Trigger.a).WaitAsync(Timeout);
+
+            // Assert
+            Assert.True(inState);
+            Assert.Equal(State.B, _sm.CurrentState);
+        }
+
+        [Fact]
+        public async Task CanFireAsync_FromEntryCallback_DoesNotDeadlock()
+        {
+            // Arrange
+            var canFire = false;
+            _config.Configure(State.A)
+                .Permit(Trigger.a, State.B);
+            _config.Configure(State.B)
+                .Permit(Trigger.a, State.C)
+                .OnEntry(async () => canFire = await _sm.CanFireAsync(Trigger.a));
+            _config.Configure(State.C);
+            await _sm.InitializeAsync();
+
+            // Act
+            await _sm.FireAsync(Trigger.a).WaitAsync(Timeout);
+
+            // Assert
+            Assert.True(canFire);
+        }
+
+        #endregion
+
+        #region Helpers
+
         private static void InterlockedMax(ref int target, int value)
         {
             int current;
