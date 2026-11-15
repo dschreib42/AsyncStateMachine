@@ -3,6 +3,7 @@ using AsyncStateMachine.Contracts;
 using NeoSmart.AsyncLock;
 using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,6 +90,9 @@ namespace AsyncStateMachine
 
             using (await _asyncLock.LockAsync(cancellationToken))
             {
+                if (_currentState.HasValue)
+                    throw new InvalidOperationException("StateMachine already initialized. Use ResetAsync to restart it.");
+
                 await EnterStateAsync(state);
             }
         }
@@ -191,17 +195,10 @@ namespace AsyncStateMachine
         {
             using (await _asyncLock.LockAsync(cancellationToken))
             {
-                try
-                {
-                    if (!_currentState.HasValue)
-                        throw new InvalidOperationException("StateMachine not yet initialized");
+                if (!_currentState.HasValue)
+                    throw new InvalidOperationException("StateMachine not yet initialized");
 
-                    await FireAsync(trigger, _currentState.Value, parameter);
-                }
-                catch (ArgumentException ex)
-                {
-                    throw new ArgumentException(ex.Message, nameof(parameter));
-                }
+                await FireAsync(trigger, _currentState.Value, parameter);
             }
         }
 
@@ -240,21 +237,18 @@ namespace AsyncStateMachine
         private async Task EnterStateAsync(TState state)
         {
             var configuration = _configuration.GetStateConfiguration(state);
+            var entryCallbacks = _filter.Filter(configuration.OnEntryCallbacks, PredicateWithoutParam);
 
             _currentState = state;
 
-            // publish state changed
-            _subject.OnNext(new Transition<TTrigger, TState>(null, null, state));
-
-            // call entry action for current state
-            await OnEnterAsync(configuration, PredicateWithoutParam);
+            await PublishAndEnterAsync(new Transition<TTrigger, TState>(null, null, state), entryCallbacks);
         }
 
         private Task<TState> FireAsync(TTrigger trigger, TState previous)
             => PerformTransition(previous, trigger, PredicateWithoutParam);
 
         private Task<TState> FireAsync<TParam>(TTrigger trigger, TState previous, TParam param)
-            => PerformTransition(previous, trigger, PredicateWithParam<TParam>, param, MinCallbacksGuard);
+            => PerformTransition(previous, trigger, PredicateWithParam<TParam>, param, ParamCallbacksGuard);
 
         private async Task<TState> PerformTransition(TState previous,
                                                      TTrigger trigger,
@@ -272,28 +266,43 @@ namespace AsyncStateMachine
 
             var next = nextState.Value;
 
+            // resolve (and validate) the entry callbacks before any side effect happens,
+            // so a failing guard leaves the machine and its observers untouched
+            var entryCallbacks = _filter.Filter(_configuration.GetStateConfiguration(next).OnEntryCallbacks, predicate, guard);
+
             // call exit action for current state
             await OnExitAsync(_configuration.GetStateConfiguration(previous), PredicateWithoutParam);
 
             _currentState = next;
 
-            // publish state changed
-            _subject.OnNext(new Transition<TTrigger, TState>(previous, trigger, next));
-
-            // call entry action for new state
-            await OnEnterAsync(_configuration.GetStateConfiguration(next), predicate, parameter, guard);
+            await PublishAndEnterAsync(new Transition<TTrigger, TState>(previous, trigger, next), entryCallbacks, parameter);
 
             return next;
         }
 
-        private Task OnEnterAsync(StateConfiguration<TTrigger, TState> configuration,
-                                  Func<ICallback, bool> predicate,
-                                  object parameter = null,
-                                  Action<IReadOnlyCollection<ICallback>> guard = null)
+        /// <summary>
+        /// Publishes the transition and runs the entry callbacks. The state has already changed at
+        /// this point, so the entry callbacks run even if an observer throws; the observer's
+        /// exception is rethrown afterwards.
+        /// </summary>
+        private async Task PublishAndEnterAsync(Transition<TTrigger, TState> transition,
+                                                IEnumerable<ICallback> entryCallbacks,
+                                                object parameter = null)
         {
-            var callbacks = _filter.Filter(configuration.OnEntryCallbacks, predicate, guard);
+            Exception publishError = null;
+            try
+            {
+                _subject.OnNext(transition);
+            }
+            catch (Exception ex)
+            {
+                publishError = ex;
+            }
 
-            return _executor.ExecuteAsync(callbacks, parameter);
+            await _executor.ExecuteAsync(entryCallbacks, parameter);
+
+            if (publishError != null)
+                ExceptionDispatchInfo.Capture(publishError).Throw();
         }
 
         private Task OnExitAsync(StateConfiguration<TTrigger, TState> configuration,
@@ -312,10 +321,10 @@ namespace AsyncStateMachine
         private static bool PredicateWithParam<TParam>(ICallback callback)
             => callback is FuncWithParamCallback<TParam> || callback is ActionWithParamCallback<TParam>;
 
-        private static void MinCallbacksGuard(IReadOnlyCollection<ICallback> callbacks)
+        private static void ParamCallbacksGuard(IReadOnlyCollection<ICallback> callbacks)
         {
             if (callbacks == null || callbacks.Count < 1)
-                throw new ArgumentException("No matching callback with parameter was found");
+                throw new ArgumentException("No matching callback with parameter was found", "parameter");
         }
 
         #endregion

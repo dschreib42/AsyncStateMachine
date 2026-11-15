@@ -24,13 +24,14 @@ namespace AsyncStateMachine.Contracts
         TState? CurrentState { get; }
 
         /// <summary>
-        /// Initializes the state machine.
+        /// Initializes the state machine. This can only be done once; use <see cref="ResetAsync"/> to restart it.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token</param>
         Task InitializeAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Initializes the state machine with the given state, e.g. to restore a persisted state.
+        /// This can only be done once; use <see cref="ResetAsync"/> to restart it.
         /// </summary>
         /// <param name="state">The state to start in.</param>
         /// <param name="cancellationToken">The cancellation token</param>

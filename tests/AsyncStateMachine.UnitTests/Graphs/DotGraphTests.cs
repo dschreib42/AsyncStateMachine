@@ -55,6 +55,28 @@ namespace AsyncStateMachine.UnitTests.Graphs
         }
 
         [Fact]
+        public void Format_CamelCaseAndTerminationNodes_TerminationNodeUsesFormattedName()
+        {
+            // Arrange
+            var configuration = new StateMachineConfiguration<Trigger, State>(State.NewBug);
+            configuration.Configure(State.NewBug).Permit(Trigger.reject, State.Rejected);
+            configuration.Configure(State.Rejected);
+
+            // Act
+            var dot = DotGraph.Format(configuration, GraphOptions.CamelCaseFormatting | GraphOptions.MarkTerminationNodes);
+
+            // Assert
+            Assert.Contains("\"Rejected\" [peripheries = 2];", dot);
+
+            configuration = new StateMachineConfiguration<Trigger, State>(State.Assigned);
+            configuration.Configure(State.Assigned).Permit(Trigger.close, State.NewBug);
+            configuration.Configure(State.NewBug);
+            dot = DotGraph.Format(configuration, GraphOptions.CamelCaseFormatting | GraphOptions.MarkTerminationNodes);
+            Assert.Contains("\"New Bug\" [peripheries = 2];", dot);
+            Assert.DoesNotContain("\"NewBug\"", dot);
+        }
+
+        [Fact]
         public Task Format_GraphOptionNone_Correct()
         {
             // Arrange

@@ -623,6 +623,169 @@ namespace AsyncStateMachine.ComponentTests
 
         #endregion
 
+        #region Transition consistency
+
+        [Fact]
+        public async Task FireAsync_WithParamWithoutMatchingCallback_HasNoSideEffects()
+        {
+            // Arrange
+            var exitCalled = false;
+            _config.Configure(State.A)
+                .Permit(Trigger.a, State.B)
+                .OnExit(() => exitCalled = true);
+            _config.Configure(State.B)
+                .OnEntry(() => { });
+            await _sm.InitializeAsync();
+            var transitions = new List<Transition<Trigger, State>>();
+            using var _ = _sm.Observable.Subscribe(transitions.Add);
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => _sm.FireAsync(Trigger.a, 42));
+
+            // Assert: the failure happens before exit action, state change and publication
+            var ex = Assert.IsType<ArgumentException>(exception);
+            Assert.Equal("parameter", ex.ParamName);
+            Assert.False(exitCalled);
+            Assert.Empty(transitions);
+            Assert.Equal(State.A, _sm.CurrentState);
+        }
+
+        [Fact]
+        public async Task FireAsync_WithParam_ArgumentExceptionFromCallback_PropagatesUnchanged()
+        {
+            // Arrange
+            var original = new ArgumentException("boom", "other");
+            _config.Configure(State.A)
+                .Permit(Trigger.a, State.B);
+            _config.Configure(State.B)
+                .OnEntry<int>(_ => throw original);
+            await _sm.InitializeAsync();
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => _sm.FireAsync(Trigger.a, 42));
+
+            // Assert
+            Assert.Same(original, exception);
+        }
+
+        [Fact]
+        public async Task FireAsync_ObserverThrows_EntryActionStillRunsAndErrorPropagates()
+        {
+            // Arrange
+            var entered = false;
+            _config.Configure(State.A)
+                .Permit(Trigger.a, State.B);
+            _config.Configure(State.B)
+                .OnEntry(() => entered = true);
+            await _sm.InitializeAsync();
+            using var _ = _sm.Observable.Subscribe(t =>
+            {
+                if (t.Destination == State.B)
+                    throw new InvalidOperationException("observer failed");
+            });
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => _sm.FireAsync(Trigger.a));
+
+            // Assert: state and entry side effects stay consistent
+            Assert.IsType<InvalidOperationException>(exception);
+            Assert.Equal("observer failed", exception.Message);
+            Assert.True(entered);
+            Assert.Equal(State.B, _sm.CurrentState);
+        }
+
+        [Fact]
+        public async Task FireAsync_MultipleAsyncCallbacks_RunInRegistrationOrder()
+        {
+            // Arrange
+            var log = new List<string>();
+            _config.Configure(State.A)
+                .PermitReentry(Trigger.a)
+                .OnEntry(async () =>
+                {
+                    log.Add("first:start");
+                    await Task.Delay(50);
+                    log.Add("first:end");
+                })
+                .OnEntry(() => { log.Add("second"); return Task.CompletedTask; });
+            await _sm.InitializeAsync();
+            log.Clear();
+
+            // Act
+            await _sm.FireAsync(Trigger.a).WaitAsync(Timeout);
+
+            // Assert
+            Assert.Equal(new[] { "first:start", "first:end", "second" }, log);
+        }
+
+        #endregion
+
+        #region Double initialization
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task InitializeAsync_AlreadyInitialized_ThrowsAndChangesNothing(bool withState)
+        {
+            // Arrange
+            var entered = 0;
+            var exited = 0;
+            _config.Configure(State.A)
+                .OnEntry(() => entered++)
+                .OnExit(() => exited++);
+            _config.Configure(State.B)
+                .OnEntry(() => entered++);
+            await _sm.InitializeAsync();
+            var transitions = new List<Transition<Trigger, State>>();
+            using var _ = _sm.Observable.Subscribe(transitions.Add);
+
+            // Act
+            var exception = await Record.ExceptionAsync(
+                () => withState ? _sm.InitializeAsync(State.B) : _sm.InitializeAsync());
+
+            // Assert
+            Assert.IsType<InvalidOperationException>(exception);
+            Assert.Equal(State.A, _sm.CurrentState);
+            Assert.Equal(1, entered);
+            Assert.Equal(0, exited);
+            Assert.Empty(transitions);
+        }
+
+        [Fact]
+        public async Task ResetAsync_AfterInitialize_StillWorks()
+        {
+            // Arrange
+            _config.Configure(State.A);
+            await _sm.InitializeAsync();
+
+            // Act
+            await _sm.ResetAsync();
+
+            // Assert
+            Assert.Equal(State.A, _sm.CurrentState);
+        }
+
+        [Fact]
+        public async Task InitializeAsync_Parallel_ExactlyOneSucceeds()
+        {
+            // Arrange
+            const int count = 20;
+            var entered = 0;
+            _config.Configure(State.A).OnEntry(() => Interlocked.Increment(ref entered));
+
+            // Act
+            var results = await Task.WhenAll(Enumerable.Range(0, count)
+                .Select(_ => Task.Run(() => Record.ExceptionAsync(() => _sm.InitializeAsync()))))
+                .WaitAsync(Timeout);
+
+            // Assert
+            Assert.Equal(1, results.Count(x => x == null));
+            Assert.Equal(count - 1, results.Count(x => x is InvalidOperationException));
+            Assert.Equal(1, entered);
+        }
+
+        #endregion
+
         #region Helpers
 
         private static void InterlockedMax(ref int target, int value)

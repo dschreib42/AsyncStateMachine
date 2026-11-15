@@ -83,6 +83,7 @@ stateMachine.Dispose();
 ```
 
 `InitializeAsync()` must be called before any trigger is fired, otherwise an `InvalidOperationException` is thrown.
+`InitializeAsync()` can only be called once; calling it on an already initialized state machine throws an `InvalidOperationException`. Use `ResetAsync()` to restart it.
 Initializing with a state that was not configured throws an `ArgumentException`.
 `CanFireAsync()` returns `false` if the state machine is not initialized, the trigger is not permitted or a guard clause throws.
 
