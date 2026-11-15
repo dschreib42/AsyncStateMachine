@@ -85,29 +85,22 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public async Task InitializeAsync(TState state, CancellationToken cancellationToken = default)
         {
-            if (!_configuration.HasState(state))
-                throw new ArgumentException("State not configured");
-
-            _configuration.Validate();
+            EnsureStateConfigured(state);
 
             using (await _asyncLock.LockAsync(cancellationToken))
             {
-                var targetState = state;
-                var configuration = _configuration.GetStateConfiguration(targetState);
-
-                _currentState = targetState;
-
-                // publish state changed
-                _subject.OnNext(new Transition<TTrigger, TState>(null, null, targetState));
-
-                // call entry action for current state
-                await OnEnterAsync(configuration, PredicateWithoutParam);
+                await EnterStateAsync(state);
             }
         }
 
         /// <inheritdoc/>
         public async Task ResetAsync(CancellationToken cancellationToken = default)
         {
+            var initialState = _configuration.InitialState;
+            EnsureStateConfigured(initialState);
+
+            // exit and re-enter under a single lock, so the reset is atomic and
+            // cancellation can only happen before anything has been changed
             using (await _asyncLock.LockAsync(cancellationToken))
             {
                 if (_currentState.HasValue)
@@ -115,9 +108,9 @@ namespace AsyncStateMachine
                     // call exit action for current state
                     await OnExitAsync(_configuration.GetStateConfiguration(_currentState.Value), PredicateWithoutParam);
                 }
-            }
 
-            await InitializeAsync(cancellationToken);
+                await EnterStateAsync(initialState);
+            }
         }
 
         /// <inheritdoc/>
@@ -170,6 +163,10 @@ namespace AsyncStateMachine
 
                     return result.Item1;
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception)
             {
@@ -227,6 +224,31 @@ namespace AsyncStateMachine
         #endregion
 
         #region Helper methods
+
+        private void EnsureStateConfigured(TState state)
+        {
+            if (!_configuration.HasState(state))
+                throw new ArgumentException($"State '{state}' is not configured", nameof(state));
+
+            _configuration.Validate();
+        }
+
+        /// <summary>
+        /// Sets the given state as current state, publishes it and runs its entry actions.
+        /// Must be called while holding the lock.
+        /// </summary>
+        private async Task EnterStateAsync(TState state)
+        {
+            var configuration = _configuration.GetStateConfiguration(state);
+
+            _currentState = state;
+
+            // publish state changed
+            _subject.OnNext(new Transition<TTrigger, TState>(null, null, state));
+
+            // call entry action for current state
+            await OnEnterAsync(configuration, PredicateWithoutParam);
+        }
 
         private Task<TState> FireAsync(TTrigger trigger, TState previous)
             => PerformTransition(previous, trigger, PredicateWithoutParam);

@@ -30,6 +30,13 @@ namespace AsyncStateMachine.Contracts
         Task InitializeAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Initializes the state machine with the given state, e.g. to restore a persisted state.
+        /// </summary>
+        /// <param name="state">The state to start in.</param>
+        /// <param name="cancellationToken">The cancellation token</param>
+        Task InitializeAsync(TState state, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Checks if the state machine is in the given state.
         /// </summary>
         /// <remarks>The given state can be the sub-state or the primary state.</remarks>
