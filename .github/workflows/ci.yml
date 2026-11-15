@@ -47,8 +47,39 @@ jobs:
         run: dotnet test --no-restore --no-build --configuration Release
 
       - name: Build nuget package
-        run: dotnet pack src/AsyncStateMachine/AsyncStateMachine.csproj --configuration Release --no-build --output .
+        run: dotnet pack src/AsyncStateMachine/AsyncStateMachine.csproj --configuration Release --no-build --output ./nupkg
+
+      - name: Upload nuget package
+        uses: actions/upload-artifact@v7
+        with:
+          name: nupkg
+          path: nupkg/*.nupkg
+          if-no-files-found: error
+
+  publish:
+    name: Publish nuget package
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    # only this job may request an OIDC token (used for NuGet trusted publishing)
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Download nuget package
+        uses: actions/download-artifact@v8
+        with:
+          name: nupkg
+          path: nupkg
+
+      # exchanges the GitHub OIDC token for a short-lived NuGet API key (trusted publishing policy on nuget.org)
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
 
       - name: Publish nuget package
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+        run: dotnet nuget push "nupkg/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --skip-duplicate
