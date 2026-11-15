@@ -78,7 +78,8 @@ bool canAssign = await stateMachine.CanFireAsync(Trigger.assign);
 // Leave the current state (invokes its OnExit callbacks) and re-enter the initial state.
 await stateMachine.ResetAsync();
 
-// Releases the observable (subscribers are not notified with OnCompleted).
+// Completes the observable (subscribers receive OnCompleted) and releases it.
+// Any further call on the disposed state machine throws an ObjectDisposedException.
 stateMachine.Dispose();
 ```
 

@@ -243,6 +243,16 @@ namespace AsyncStateMachine
             if (Interlocked.Exchange(ref _disposed, 1) != 0)
                 return;
 
+            // tell observers that no more transitions will follow
+            try
+            {
+                _subject.OnCompleted();
+            }
+            catch (Exception)
+            {
+                // an observer failing must not make Dispose throw
+            }
+
             if (_subject is IDisposable x)
             {
                 x.Dispose();

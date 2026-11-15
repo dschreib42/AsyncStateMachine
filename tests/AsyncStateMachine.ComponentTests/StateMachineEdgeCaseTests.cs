@@ -846,6 +846,37 @@ namespace AsyncStateMachine.ComponentTests
 
         #endregion
 
+        [Fact]
+        public async Task Dispose_CompletesObservers_ExactlyOnce()
+        {
+            // Arrange
+            var completed = 0;
+            _config.Configure(State.A);
+            await _sm.InitializeAsync();
+            using var _ = _sm.Observable.Subscribe(_ => { }, () => completed++);
+
+            // Act
+            _sm.Dispose();
+            _sm.Dispose();
+
+            // Assert
+            Assert.Equal(1, completed);
+        }
+
+        [Fact]
+        public void Dispose_ObserverThrowsOnCompleted_DoesNotThrow()
+        {
+            // Arrange
+            _config.Configure(State.A);
+            using var _ = _sm.Observable.Subscribe(_ => { }, () => throw new InvalidOperationException("observer failed"));
+
+            // Act
+            var exception = Record.Exception(() => _sm.Dispose());
+
+            // Assert
+            Assert.Null(exception);
+        }
+
         #region Failed initialization
 
         [Fact]
