@@ -786,6 +786,98 @@ namespace AsyncStateMachine.ComponentTests
 
         #endregion
 
+        #region Disposal
+
+        [Theory]
+        [MemberData(nameof(AllOperations))]
+        public async Task Operation_AfterDispose_ThrowsObjectDisposed(string operation)
+        {
+            // Arrange
+            var exited = false;
+            ConfigureForAllOperations(() => exited = true);
+            await _sm.InitializeAsync();
+            _sm.Dispose();
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => Invoke(_sm, operation, CancellationToken.None));
+
+            // Assert: nothing happens on a disposed machine
+            Assert.IsType<ObjectDisposedException>(exception);
+            Assert.False(exited);
+            Assert.Equal(State.A, _sm.CurrentState);
+        }
+
+        [Fact]
+        public async Task Dispose_WhileFireIsWaitingForLock_WaitingCallThrowsObjectDisposed()
+        {
+            // Arrange
+            var block = false;
+            var entryRuns = 0;
+            var entered = new TaskCompletionSource();
+            var release = new TaskCompletionSource();
+            _config.Configure(State.A)
+                .PermitReentry(Trigger.a)
+                .OnEntry(async () =>
+                {
+                    Interlocked.Increment(ref entryRuns);
+                    if (!block)
+                        return;
+
+                    entered.TrySetResult();
+                    await release.Task;
+                });
+            await _sm.InitializeAsync();
+            block = true;
+            entryRuns = 0;
+
+            var running = _sm.FireAsync(Trigger.a);
+            await entered.Task.WaitAsync(Timeout);
+            var waiting = _sm.FireAsync(Trigger.a);
+
+            // Act
+            _sm.Dispose();
+            release.SetResult();
+
+            // Assert: the running call finishes, the one that was waiting for the lock is rejected
+            await running.WaitAsync(Timeout);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => waiting.WaitAsync(Timeout));
+            Assert.Equal(1, entryRuns);
+        }
+
+        #endregion
+
+        #region Failed initialization
+
+        [Fact]
+        public async Task InitializeAsync_EntryCallbackThrows_MachineStaysUninitializedAndCanRetry()
+        {
+            // Arrange
+            var fail = true;
+            _config.Configure(State.A)
+                .OnEntry(() =>
+                {
+                    if (fail)
+                        throw new InvalidOperationException("entry failed");
+                });
+
+            // Act
+            var first = await Record.ExceptionAsync(() => _sm.InitializeAsync());
+
+            // Assert
+            Assert.Equal("entry failed", first.Message);
+            Assert.Null(_sm.CurrentState);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _sm.FireAsync(Trigger.a));
+
+            // Act: retry succeeds once the cause is gone
+            fail = false;
+            await _sm.InitializeAsync();
+
+            // Assert
+            Assert.Equal(State.A, _sm.CurrentState);
+        }
+
+        #endregion
+
         #region Helpers
 
         private static void InterlockedMax(ref int target, int value)

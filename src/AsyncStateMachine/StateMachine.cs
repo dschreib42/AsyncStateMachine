@@ -28,7 +28,7 @@ namespace AsyncStateMachine
         private readonly AsyncLock _asyncLock;
 
         private TState? _currentState;
-        private bool _disposed;
+        private int _disposed;
 
         #endregion
 
@@ -86,20 +86,33 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public async Task InitializeAsync(TState state, CancellationToken cancellationToken = default)
         {
+            ThrowIfDisposed();
             EnsureStateConfigured(state);
 
             using (await _asyncLock.LockAsync(cancellationToken))
             {
+                ThrowIfDisposed();
+
                 if (_currentState.HasValue)
                     throw new InvalidOperationException("StateMachine already initialized. Use ResetAsync to restart it.");
 
-                await EnterStateAsync(state);
+                try
+                {
+                    await EnterStateAsync(state);
+                }
+                catch
+                {
+                    // initialization failed, so the machine must not count as initialized
+                    _currentState = null;
+                    throw;
+                }
             }
         }
 
         /// <inheritdoc/>
         public async Task ResetAsync(CancellationToken cancellationToken = default)
         {
+            ThrowIfDisposed();
             var initialState = _configuration.InitialState;
             EnsureStateConfigured(initialState);
 
@@ -107,6 +120,8 @@ namespace AsyncStateMachine
             // cancellation can only happen before anything has been changed
             using (await _asyncLock.LockAsync(cancellationToken))
             {
+                ThrowIfDisposed();
+
                 if (_currentState.HasValue)
                 {
                     // call exit action for current state
@@ -124,8 +139,12 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public async Task<bool> InStateAsync(TState state, ushort maxDepth, CancellationToken cancellationToken = default)
         {
+            ThrowIfDisposed();
+
             using (await _asyncLock.LockAsync(cancellationToken))
             {
+                ThrowIfDisposed();
+
                 if (!_currentState.HasValue)
                     throw new InvalidOperationException("StateMachine not yet initialized");
 
@@ -156,10 +175,14 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public async Task<bool> CanFireAsync(TTrigger trigger, CancellationToken cancellationToken = default)
         {
+            ThrowIfDisposed();
+
             try
             {
                 using (await _asyncLock.LockAsync(cancellationToken))
                 {
+                    ThrowIfDisposed();
+
                     if (!_currentState.HasValue || !_configuration.HasState(_currentState.Value))
                         return false;
 
@@ -172,6 +195,10 @@ namespace AsyncStateMachine
             {
                 throw;
             }
+            catch (ObjectDisposedException)
+            {
+                throw;
+            }
             catch (Exception)
             {
                 return false;
@@ -181,8 +208,12 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public async Task FireAsync(TTrigger trigger, CancellationToken cancellationToken = default)
         {
+            ThrowIfDisposed();
+
             using (await _asyncLock.LockAsync(cancellationToken))
             {
+                ThrowIfDisposed();
+
                 if (!_currentState.HasValue)
                     throw new InvalidOperationException("StateMachine not yet initialized");
 
@@ -193,8 +224,12 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public async Task FireAsync<TParam>(TTrigger trigger, TParam parameter, CancellationToken cancellationToken = default)
         {
+            ThrowIfDisposed();
+
             using (await _asyncLock.LockAsync(cancellationToken))
             {
+                ThrowIfDisposed();
+
                 if (!_currentState.HasValue)
                     throw new InvalidOperationException("StateMachine not yet initialized");
 
@@ -205,7 +240,7 @@ namespace AsyncStateMachine
         /// <inheritdoc/>
         public void Dispose()
         {
-            if (_disposed)
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
                 return;
 
             if (_subject is IDisposable x)
@@ -213,14 +248,18 @@ namespace AsyncStateMachine
                 x.Dispose();
             }
 
-            _disposed = true;
-
             GC.SuppressFinalize(this);
         }
 
         #endregion
 
         #region Helper methods
+
+        private void ThrowIfDisposed()
+        {
+            if (Volatile.Read(ref _disposed) != 0)
+                throw new ObjectDisposedException(GetType().Name);
+        }
 
         private void EnsureStateConfigured(TState state)
         {
