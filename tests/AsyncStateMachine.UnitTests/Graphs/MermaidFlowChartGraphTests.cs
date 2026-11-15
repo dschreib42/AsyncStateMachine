@@ -6,7 +6,6 @@ using Xunit;
 
 namespace AsyncStateMachine.UnitTests.Graphs
 {
-    [UsesVerify]
     public class MermaidFlowChartGraphTests
     {
         private readonly StateMachineConfiguration<Trigger, State> _configuration;

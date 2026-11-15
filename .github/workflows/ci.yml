@@ -8,6 +8,7 @@ on:
       - 'tests/**'
       - 'samples/**'
       - 'AsyncStateMachine.sln'
+      - 'global.json'
       - '**/ci.yml'
   pull_request:
     branches: [ develop, main ]
@@ -16,6 +17,7 @@ on:
       - 'tests/**'
       - 'samples/**'
       - 'AsyncStateMachine.sln'
+      - 'global.json'
       - '**/ci.yml'
   workflow_dispatch:
 
@@ -30,12 +32,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # SDK 10 builds the solution; the 7.0 runtime is needed to run the net7.0 test projects.
+      # installs the .NET SDK version pinned in global.json
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: |
-            7.0.x
-            10.0.x
+          global-json-file: global.json
 
       - name: Restore dependencies
         run: dotnet restore

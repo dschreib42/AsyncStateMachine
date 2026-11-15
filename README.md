@@ -255,8 +255,8 @@ This string representation can then be rendered by tools that support the mermai
 
 ## Building
 
-The AsyncStateMachine package targets .NET 6.0, .NET 7.0 and .NET Standard 2.0. Building the solution requires the .NET SDK 7.0 or later;
-use the `dotnet` CLI or an IDE such as [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or [Visual Studio Code](https://code.visualstudio.com/Download):
+The AsyncStateMachine package targets .NET 10.0 and .NET Standard 2.0, so it can also be used on older runtimes such as .NET 8 or .NET Framework 4.6.2+.
+Building the solution requires the .NET SDK 10.0 (see `global.json`); use the `dotnet` CLI or an IDE such as [Visual Studio 2026](https://visualstudio.microsoft.com/vs/) or [Visual Studio Code](https://code.visualstudio.com/Download):
 
 ```shell
 dotnet build

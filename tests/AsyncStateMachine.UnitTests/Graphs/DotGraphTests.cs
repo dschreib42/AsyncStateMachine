@@ -6,7 +6,6 @@ using Xunit;
 
 namespace AsyncStateMachine.UnitTests.Graphs
 {
-    [UsesVerify]
     public class DotGraphTests
     {
         private readonly StateMachineConfiguration<Trigger, State> _configuration;
