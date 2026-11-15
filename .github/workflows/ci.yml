@@ -1,47 +1,54 @@
-name: CI for Pull-Requests
+name: ci
 
 on:
-  push:    
+  push:
     branches: [ develop, main ]
     paths:
       - 'src/**'
       - 'tests/**'
+      - 'samples/**'
       - 'AsyncStateMachine.sln'
+      - 'global.json'
       - '**/ci.yml'
-  pull_request:  
-    branches: [ dev, main ]
+  pull_request:
+    branches: [ develop, main ]
     paths:
       - 'src/**'
       - 'tests/**'
+      - 'samples/**'
       - 'AsyncStateMachine.sln'
+      - 'global.json'
       - '**/ci.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    name: Build and Run UnitTests    
+    name: Build and Run UnitTests
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v7
+
+      # installs the .NET SDK version pinned in global.json
+      - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '7.x'
-          include-prerelease: false
-          
+          global-json-file: global.json
+
       - name: Restore dependencies
         run: dotnet restore
-      
+
       - name: Build solution
-        run: dotnet build AsyncStateMachine.sln --configuration Release --no-restore 
+        run: dotnet build AsyncStateMachine.sln --configuration Release --no-restore
 
       - name: Run UnitTests
         run: dotnet test --no-restore --no-build --configuration Release
-        
+
       - name: Build nuget package
-        run: dotnet pack src/AsyncStateMachine/AsyncStateMachine.csproj --configuration Release --verbosity normal --output .
-        
+        run: dotnet pack src/AsyncStateMachine/AsyncStateMachine.csproj --configuration Release --no-build --output .
+
       - name: Publish nuget package
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate

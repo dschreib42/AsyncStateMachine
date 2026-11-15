@@ -17,7 +17,9 @@
             Console.WriteLine("State machine:");
             Console.WriteLine(bug.ToDotGraph());
 
-            Console.ReadKey(false);
+            // wait for a key press, unless the input is redirected (e.g. when run from a script or CI)
+            if (!Console.IsInputRedirected)
+                Console.ReadKey(false);
         }
     }
 }

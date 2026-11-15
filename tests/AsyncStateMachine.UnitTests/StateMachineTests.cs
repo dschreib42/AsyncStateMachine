@@ -146,13 +146,14 @@ namespace AsyncStateMachine.UnitTests
         }
 
         [Fact]
-        public Task FireAsync_InvalidTrigger_Throws()
+        public async Task FireAsync_InvalidTrigger_Throws()
         {
             // Arrange
-            var result = _config.Configure(State.A);
+            _config.Configure(State.A);
+            await _sm.InitializeAsync();
 
             // Act & Assert
-            return Assert.ThrowsAsync<InvalidOperationException>(() => _sm.FireAsync(Trigger.a));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _sm.FireAsync(Trigger.a));
         }
 
         [Fact]

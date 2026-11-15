@@ -57,9 +57,9 @@ namespace BugTrackerExample
                 .OnEntry(() => Console.WriteLine("Bug is closed"));
 
             // Dump graph
-            //Console.WriteLine(DotGraph.Format(_configuration, FormattingOptions.CamelCaseFormatting));
+            //Console.WriteLine(DotGraph.Format(_configuration, GraphOptions.CamelCaseFormatting));
 
-            // Instantiate a new state machine in the Open state
+            // Instantiate a new state machine; it enters the Open state with InitializeAsync()
             _machine = new StateMachine<Trigger, State>(_configuration);
         }
 
@@ -76,7 +76,7 @@ namespace BugTrackerExample
             => _machine.FireAsync(Trigger.defer);
 
         /// <summary>
-        /// This method is called automatically when the Assigned state is entered, but only when the trigger is _assignTrigger.
+        /// This method is called automatically when the Assigned state is entered, but only when the trigger is fired with a string parameter.
         /// </summary>
         /// <param name="assignee">The person assigned to the bug.</param>
         private async Task OnAssignedAsync(string assignee)
